@@ -64,6 +64,7 @@ class StanfordQDessBoneUNet2D(SegModel):
         self,
         model_path: str,
         resample_images: bool = True,
+        orig_model_image_size: tuple = (384, 384),
         # *args,
         # **kwargs
     ):
@@ -76,7 +77,7 @@ class StanfordQDessBoneUNet2D(SegModel):
         """
 
         self.batch_size = preferences.segmentation_batch_size
-        self.orig_model_image_size = (384, 384)
+        self.orig_model_image_size = orig_model_image_size
         self.resample_images = resample_images
         self.seg_model = self.build_model(model_path=model_path)
         # super().__init__(*args, **kwargs)
