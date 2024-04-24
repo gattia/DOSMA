@@ -6,8 +6,7 @@ import skimage
 from dosma.core.med_volume import MedicalVolume
 from dosma.core.orientation import SAGITTAL
 from dosma.defaults import preferences
-from dosma.models.seg_model import SegModel, whiten_volume
-from dosma.tissues.tissue import largest_cc
+from dosma.models.seg_model import SegModel, whiten_volume, get_connected_segments, fill_holes
 
 from keras.models import load_model
 
@@ -65,6 +64,14 @@ class StanfordQDessBoneUNet2D(SegModel):
         model_path: str,
         resample_images: bool = True,
         orig_model_image_size: tuple = (384, 384),
+        tissue_names: tuple = (
+            "pc", "fc", "mtc", "ltc", "med_men", "lat_men", "fem", "tib", "pat"
+        ),
+        tissues_to_combine: tuple = (
+            (("lat_men", "med_men"), "men"),
+            (("mtc", "ltc"), "tc"),
+        ),
+        bone_indices: tuple = (7, 8, 9)
         # *args,
         # **kwargs
     ):
@@ -80,7 +87,10 @@ class StanfordQDessBoneUNet2D(SegModel):
         self.orig_model_image_size = orig_model_image_size
         self.resample_images = resample_images
         self.seg_model = self.build_model(model_path=model_path)
-        # super().__init__(*args, **kwargs)
+
+        self.tissue_names = tissue_names
+        self.tissues_to_combine = tissues_to_combine
+        self.bone_indices = bone_indices
 
     def build_model(self, model_path: str):
         """
@@ -103,6 +113,7 @@ class StanfordQDessBoneUNet2D(SegModel):
         self,
         volume: MedicalVolume,
         connected_only: bool = True,
+        fill_bone_holes: bool = True,
     ):
         """Segment tissues.
 
@@ -113,6 +124,7 @@ class StanfordQDessBoneUNet2D(SegModel):
                 where the last dimension corresponds to echo 1 and 2, respectively.
             connected_only (bool): If True, only the largest connected component of
                 each tissue is returned. Default: True.
+            fill_bone_holes (bool): If True, fill holes in bone segmentations. Default: True.
 
         Returns:
             dict: Dictionary of segmented tissues.
@@ -141,7 +153,7 @@ class StanfordQDessBoneUNet2D(SegModel):
 
         # return mask
         # one-hot encode mask, reorder axes, and re-size to input shape
-        mask = self.__postprocess_segmentation__(mask, connected_only=connected_only)
+        mask = self.__postprocess_segmentation__(mask, connected_only=connected_only, fill_bone_holes=fill_bone_holes)
 
         vol_cp = deepcopy(vol_copy)
         vol_cp.volume = deepcopy(mask)
@@ -150,7 +162,7 @@ class StanfordQDessBoneUNet2D(SegModel):
         vols = {"all": vol_cp}
 
         for i, category in enumerate(
-            ["pc", "fc", "mtc", "ltc", "med_men", "lat_men", "fem", "tib", "pat"]
+            self.tissue_names
         ):
             vol_cp = deepcopy(vol_copy)
             vol_cp.volume = np.zeros_like(mask)
@@ -160,18 +172,15 @@ class StanfordQDessBoneUNet2D(SegModel):
             vol_cp.reformat(volume.orientation, inplace=True)
             vols[category] = vol_cp
 
-        # Create "tc", "men" labels from original models
-        tissues_to_combine = (
-            (("lat_men", "med_men"), "men"),
-            (("mtc", "ltc"), "tc"),
-        )
-        for tissues, tissue_name in tissues_to_combine:
-            vol_cp = deepcopy(vol_copy)
-            vol_cp.volume = np.zeros_like(mask)
-            vol_cp.volume[(vols[tissues[0]].volume == 1) + (vols[tissues[1]].volume == 1)] = 1
-            # reorient to match with original volume
-            vol_cp.reformat(volume.orientation, inplace=True)
-            vols[tissue_name] = vol_cp
+        # combine tissues
+        if len(self.tissues_to_combine) > 0:
+            for tissues, tissue_name in self.tissues_to_combine:
+                vol_cp = deepcopy(vol_copy)
+                vol_cp.volume = np.zeros_like(mask)
+                vol_cp.volume[(vols[tissues[0]].volume == 1) + (vols[tissues[1]].volume == 1)] = 1
+                # reorient to match with original volume
+                vol_cp.reformat(volume.orientation, inplace=True)
+                vols[tissue_name] = vol_cp
 
         return vols
 
@@ -189,7 +198,7 @@ class StanfordQDessBoneUNet2D(SegModel):
 
         return whiten_volume(volume, eps=1e-8)
 
-    def __postprocess_segmentation__(self, mask: np.ndarray, connected_only: bool = True):
+    def __postprocess_segmentation__(self, mask: np.ndarray, connected_only: bool = True, fill_bone_holes: bool = True):
 
         # USE ARGMAX TO GET SINGLE VOLUME SEGMENTATION OF ALL TISSUES
         mask = np.argmax(mask, axis=1)
@@ -206,32 +215,13 @@ class StanfordQDessBoneUNet2D(SegModel):
         if connected_only is True:
             mask = get_connected_segments(mask)
 
+        if fill_bone_holes is True:
+            for bone_idx in self.bone_indices:
+                mask_ = fill_holes(mask, label_idx=bone_idx)
+                mask[mask_ == 1] = bone_idx
+
         mask = mask.astype(np.uint8)
 
         return mask
 
 
-def get_connected_segments(mask: np.ndarray) -> np.ndarray:
-    """
-    Get the connected segments in segmentation mask
-
-    Args:
-        mask (np.ndarray): 3D volume of all segmented tissues.
-
-    Returns:
-        np.ndarray: 3D volume with only the connected segments.
-    """
-
-    unique_tissues = np.unique(mask)
-
-    mask_ = np.zeros_like(mask)
-
-    for idx in unique_tissues:
-        if idx == 0:
-            continue
-        mask_binary = np.zeros_like(mask)
-        mask_binary[mask == idx] = 1
-        mask_binary_conected = np.asarray(largest_cc(mask_binary), dtype=np.uint8)
-        mask_[mask_binary_conected == 1] = idx
-
-    return mask_
