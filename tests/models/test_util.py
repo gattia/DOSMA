@@ -13,7 +13,7 @@ class TestUtil(unittest.TestCase):
             aliases = m.ALIASES
 
             # all supported models must have at least 1 alias that is not ''
-            valid_alias = len(aliases) >= 1 and all([x != "" for x in aliases])
+            valid_alias = len(aliases) >= 1 and all(x != "" for x in aliases)
 
             assert valid_alias, "%s does not have valid aliases" % m
 

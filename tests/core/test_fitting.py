@@ -313,11 +313,11 @@ class TestCurveFitter(unittest.TestCase):
         assert np.allclose(a_hat.volume[mask_arr != 0], 1.0)
         assert np.allclose(b_hat.volume[mask_arr != 0], b[mask_arr != 0])
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(TypeError):  # noqa B908
             fitter = CurveFitter(monoexponential)
             popt = fitter.fit(x, y, mask="foo")[0]
 
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(RuntimeError):  # noqa B908
             mask_incorrect_shape = np.random.rand(5, 5, 5) > 0.5
             fitter = CurveFitter(monoexponential)
             popt = fitter.fit(x, y, mask=mask_incorrect_shape)[0]

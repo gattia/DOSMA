@@ -134,7 +134,8 @@ class CommandLineScanContainer:
         if (dicom_path is not None) and (not os.path.isdir(dicom_path)):
             if load_path is not None:
                 warnings.warn(
-                    "Dicom_path {} not found. Will load data from {}".format(dicom_path, load_path)
+                    "Dicom_path {} not found. Will load data from {}".format(dicom_path, load_path),
+                    stacklevel=2,
                 )
             else:
                 raise NotADirectoryError("{} is not a directory".format(dicom_path))

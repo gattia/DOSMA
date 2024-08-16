@@ -394,6 +394,7 @@ class MedicalVolume(NDArrayOperatorsMixin):
             "`match_orientation` is deprecated and will be removed in v0.1. "
             "Use `mv.reformat_as(self, inplace=True)` instead.",
             DeprecationWarning,
+            stacklevel=2,
         )
         if not isinstance(mv, MedicalVolume):
             raise TypeError("`mv` must be a MedicalVolume.")
@@ -410,6 +411,7 @@ class MedicalVolume(NDArrayOperatorsMixin):
             "`match_orientation_batch` is deprecated and will be removed in v0.1. "
             "Use `[x.reformat_as(self, inplace=True) for x in mvs]` instead.",
             DeprecationWarning,
+            stacklevel=2,
         )
         for mv in mvs:
             self.match_orientation(mv)
@@ -718,7 +720,8 @@ class MedicalVolume(NDArrayOperatorsMixin):
             self._headers = self._validate_and_format_headers([pydicom.Dataset()])
             warnings.warn(
                 "Headers were generated and may not contain all attributes "
-                "required to save the volume in DICOM format."
+                "required to save the volume in DICOM format.",
+                stacklevel=2,
             )
 
         VR_registry = {float: "DS", int: "IS", str: "LS"}

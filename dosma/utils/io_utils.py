@@ -142,6 +142,7 @@ def init_logger(log_file: str, debug: bool = False):  # pragma: no cover
         "init_logger is deprecated since v0.0.14 and will no longer be "
         "supported in v0.13. Use `dosma.setup_logger` instead.",
         DeprecationWarning,
+        stacklevel=2,
     )
 
     level = logging.DEBUG if debug else logging.INFO

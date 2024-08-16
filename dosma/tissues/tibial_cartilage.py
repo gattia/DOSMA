@@ -311,7 +311,8 @@ class TibialCartilage(Tissue):
                     else:
                         warnings.warn(
                             "%s: Pixel value exceeded upper bound (%0.1f). Using normalized scale."
-                            % (quant_val.name, upper_bound)
+                            % (quant_val.name, upper_bound),
+                            stacklevel=2,
                         )
                         plt.imshow(data_map, cmap="jet")
 

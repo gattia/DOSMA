@@ -103,7 +103,7 @@ class PatellarCartilage(Tissue):
                 If `self.medial_to_lateral`, last dimension should be ML.
         """
         if np.sum(base_map) == 0:
-            warnings.warn("No mask for `%s` was found." % self.FULL_NAME)
+            warnings.warn("No mask for `%s` was found." % self.FULL_NAME, stacklevel=2)
 
         # Superficial/Deep (A/P)
         locs = base_map.sum(axis=1).nonzero()
@@ -277,7 +277,8 @@ class PatellarCartilage(Tissue):
                     else:
                         warnings.warn(
                             "%s: Pixel value exceeded upper bound (%0.1f). Using normalized scale."
-                            % (quant_val.name, upper_bound)
+                            % (quant_val.name, upper_bound),
+                            stacklevel=2,
                         )
                         plt.imshow(data_map, cmap="jet")
 

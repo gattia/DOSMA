@@ -68,7 +68,7 @@ def model_from_config(cfg_file_or_dict, weights_dir=None, **kwargs) -> SegModel:
             out = [out]
         if not len(categories) == len(out):
             raise ValueError("Got {} outputs, but {} categories".format(len(out), len(categories)))
-        return {cat: out for cat, out in zip(categories, out, strict=True)}
+        return dict(zip(categories, out, strict=True))
 
     if isinstance(cfg_file_or_dict, str):
         with open(cfg_file_or_dict, "r") as f:

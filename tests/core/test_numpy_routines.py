@@ -355,7 +355,9 @@ class TestNumpyRoutinesMedicalVolume(unittest.TestCase):
         # Pad all dims.
         pad_width = (1, 2, 3, 4)
         np_pad_width = ((1,), (2,), (3,), (4,))
-        expected_origin = np.asarray([x - p for x, p in zip(mv.scanner_origin, pad_width, strict=True)])
+        expected_origin = np.asarray(
+            [x - p for x, p in zip(mv.scanner_origin, pad_width, strict=True)]
+        )
         expected_arr = np.pad(mv.A, np_pad_width)
         mv2 = np.pad(mv, pad_width)
         assert np.all(mv2.A == expected_arr)
@@ -374,7 +376,10 @@ class TestNumpyRoutinesMedicalVolume(unittest.TestCase):
         pad_width = (None, 0, 3, 4)
         np_pad_width = ((0,), (0,), (3,), (4,))
         expected_origin = np.asarray(
-            [x - p if isinstance(p, int) else x for x, p in zip(mv.scanner_origin, pad_width, strict=True)]
+            [
+                x - p if isinstance(p, int) else x
+                for x, p in zip(mv.scanner_origin, pad_width, strict=True)
+            ]
         )
         expected_arr = np.pad(mv.A, np_pad_width)
         mv2 = np.pad(mv, pad_width)
@@ -385,7 +390,10 @@ class TestNumpyRoutinesMedicalVolume(unittest.TestCase):
         eff_pad_width = (0, 0, 3, 4)
         np_pad_width = ((0,), (0,), (3,), (4,))
         expected_origin = np.asarray(
-            [x - p if isinstance(p, int) else x for x, p in zip(mv.scanner_origin, eff_pad_width, strict=True)]
+            [
+                x - p if isinstance(p, int) else x
+                for x, p in zip(mv.scanner_origin, eff_pad_width, strict=True)
+            ]
         )
         expected_arr = np.pad(mv.A, np_pad_width)
         mv2 = np.pad(mv, pad_width)

@@ -92,7 +92,7 @@ class QDessTest(util.ScanTest):
         """Test support for multiclass segmentation."""
         scan = self.SCAN_TYPE.from_dicom(self.dicom_dirpath, num_workers=util.num_workers())
         tissue = FemoralCartilage()
-        tissue.find_weights(SEGMENTATION_WEIGHTS_FOLDER),
+        tissue.find_weights(SEGMENTATION_WEIGHTS_FOLDER),  # noqa B018
         dims = scan.get_dimensions()
         input_shape = (dims[0], dims[1], 1)
         model = get_model(

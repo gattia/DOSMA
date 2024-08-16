@@ -194,7 +194,7 @@ class QDess(ScanSequence):
         alpha = float(ref_dicom.FlipAngle) if alpha is None else alpha
         alpha = math.radians(alpha)
         if np.allclose(math.sin(alpha / 2), 0):
-            warnings.warn("sin(flip angle) is close to 0 - t2 map may fail.")
+            warnings.warn("sin(flip angle) is close to 0 - t2 map may fail.", stacklevel=2)
 
         GlArea = float(ref_dicom[self.__GL_AREA_TAG__].value) if gl_area is None else gl_area
 
