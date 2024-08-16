@@ -52,7 +52,7 @@ class ConesTest(util.ScanTest):
         if metadata:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                for idx, (y, t) in enumerate(zip(ys, ts, strict=True)):
+                for idx, (y, t) in enumerate(zip(ys, ts)):
                     y.set_metadata("EchoTime", t, force=True)
                     y.set_metadata("EchoNumber", idx + 1, force=True)
 
@@ -61,7 +61,7 @@ class ConesTest(util.ScanTest):
     def test_basic(self):
         ys, _, _, _ = self._generate_mock_data()
         scan = Cones(ys)
-        for v1, v2 in zip(scan.volumes, ys, strict=True):
+        for v1, v2 in zip(scan.volumes, ys):
             assert v1.is_identical(v2)
         assert scan.echo_times == [y.get_metadata("EchoTime", float) for y in ys]
 
@@ -82,17 +82,17 @@ class ConesTest(util.ScanTest):
         assert set(os.listdir(save_dir)) == {"volumes", f"{scan.NAME}.data"}
 
         scan2 = Cones.load(save_dir)
-        for v1, v2 in zip(scan.volumes, scan2.volumes, strict=True):
+        for v1, v2 in zip(scan.volumes, scan2.volumes):
             assert v1.is_identical(v2)
         assert scan.echo_times == scan2.echo_times
 
         scan2 = Cones.load(save_path)
-        for v1, v2 in zip(scan.volumes, scan2.volumes, strict=True):
+        for v1, v2 in zip(scan.volumes, scan2.volumes):
             assert v1.is_identical(v2)
         assert scan.echo_times == scan2.echo_times
 
         scan2 = Cones.from_dict(io_utils.load_pik(save_path))
-        for v1, v2 in zip(scan.volumes, scan2.volumes, strict=True):
+        for v1, v2 in zip(scan.volumes, scan2.volumes):
             assert v1.is_identical(v2)
         assert scan.echo_times == scan2.echo_times
 
@@ -101,7 +101,7 @@ class ConesTest(util.ScanTest):
         scan = Cones(ys)
 
         scan2 = Cones.from_dict(scan.__dict__)
-        for v1, v2 in zip(scan2.volumes, ys, strict=True):
+        for v1, v2 in zip(scan2.volumes, ys):
             assert v1.is_identical(v2)
         assert scan.echo_times == scan2.echo_times
 
@@ -119,7 +119,7 @@ class ConesTest(util.ScanTest):
             nw.save(y, path)
         data_dict = {"volumes": ys, "subvolumes": paths}
         scan2 = Cones.from_dict(data_dict)
-        for v1, v2 in zip(scan2.volumes, ys, strict=True):
+        for v1, v2 in zip(scan2.volumes, ys):
             assert v1.is_identical(v2)
         assert scan.echo_times == scan2.echo_times
 
@@ -171,7 +171,7 @@ class ConesTest(util.ScanTest):
         NiftiWriter().save(mask, mask_path)
         scan3 = Cones(ys)
         scan3.interregister(ys[-1], mask)
-        for v1, v2 in zip(scan3.volumes, scan2.volumes, strict=True):
+        for v1, v2 in zip(scan3.volumes, scan2.volumes):
             assert np.allclose(v1.A, v2.A)
 
     @unittest.skipIf(

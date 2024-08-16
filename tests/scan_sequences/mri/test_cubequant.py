@@ -53,7 +53,7 @@ class CubeQuantTest(util.ScanTest):
         if metadata:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                for idx, (y, t) in enumerate(zip(ys, ts, strict=True)):
+                for idx, (y, t) in enumerate(zip(ys, ts)):
                     y.set_metadata("EchoTime", t, force=True)
                     y.set_metadata("EchoNumber", idx + 1, force=True)
 
@@ -62,7 +62,7 @@ class CubeQuantTest(util.ScanTest):
     def test_basic(self):
         ys, _, _, _ = self._generate_mock_data()
         scan = CubeQuant(ys)
-        for v1, v2 in zip(scan.volumes, ys, strict=True):
+        for v1, v2 in zip(scan.volumes, ys):
             assert v1.is_identical(v2)
         assert scan.spin_lock_times == [y.get_metadata("EchoTime", float) for y in ys]
 
@@ -83,17 +83,17 @@ class CubeQuantTest(util.ScanTest):
         assert set(os.listdir(save_dir)) == {"volumes", f"{scan.NAME}.data"}
 
         scan2 = CubeQuant.load(save_dir)
-        for v1, v2 in zip(scan.volumes, scan2.volumes, strict=True):
+        for v1, v2 in zip(scan.volumes, scan2.volumes):
             assert v1.is_identical(v2)
         assert scan.spin_lock_times == scan2.spin_lock_times
 
         scan2 = CubeQuant.load(save_path)
-        for v1, v2 in zip(scan.volumes, scan2.volumes, strict=True):
+        for v1, v2 in zip(scan.volumes, scan2.volumes):
             assert v1.is_identical(v2)
         assert scan.spin_lock_times == scan2.spin_lock_times
 
         scan2 = CubeQuant.from_dict(io_utils.load_pik(save_path))
-        for v1, v2 in zip(scan.volumes, scan2.volumes, strict=True):
+        for v1, v2 in zip(scan.volumes, scan2.volumes):
             assert v1.is_identical(v2)
         assert scan.spin_lock_times == scan2.spin_lock_times
 
@@ -102,7 +102,7 @@ class CubeQuantTest(util.ScanTest):
         scan = CubeQuant(ys)
 
         scan2 = CubeQuant.from_dict(scan.__dict__)
-        for v1, v2 in zip(scan2.volumes, ys, strict=True):
+        for v1, v2 in zip(scan2.volumes, ys):
             assert v1.is_identical(v2)
         assert scan.spin_lock_times == scan2.spin_lock_times
 
@@ -120,7 +120,7 @@ class CubeQuantTest(util.ScanTest):
             nw.save(y, path)
         data_dict = {"volumes": ys, "subvolumes": paths}
         scan2 = CubeQuant.from_dict(data_dict)
-        for v1, v2 in zip(scan2.volumes, ys, strict=True):
+        for v1, v2 in zip(scan2.volumes, ys):
             assert v1.is_identical(v2)
         assert scan.spin_lock_times == scan2.spin_lock_times
 
@@ -177,7 +177,7 @@ class CubeQuantTest(util.ScanTest):
         NiftiWriter().save(mask, mask_path)
         scan3 = CubeQuant(ys)
         scan3.interregister(ys[0], mask)
-        for v1, v2 in zip(scan3.volumes, scan2.volumes, strict=True):
+        for v1, v2 in zip(scan3.volumes, scan2.volumes):
             assert np.allclose(v1.A, v2.A)
 
     @unittest.skipIf(

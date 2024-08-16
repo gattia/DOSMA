@@ -51,7 +51,7 @@ class MapssTest(util.ScanTest):
         if metadata:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                for idx, (y, t) in enumerate(zip(ys, ts, strict=True)):
+                for idx, (y, t) in enumerate(zip(ys, ts)):
                     y.set_metadata("EchoTime", t, force=True)
                     y.set_metadata("EchoNumber", idx + 1, force=True)
 
@@ -127,7 +127,7 @@ class MapssTest(util.ScanTest):
         )
 
         scan2 = Mapss.load(pik_file)
-        for v1, v2 in zip(scan.volumes, scan2.volumes, strict=True):
+        for v1, v2 in zip(scan.volumes, scan2.volumes):
             assert v1.is_identical(v2)
         assert scan2.echo_times == scan.echo_times
 

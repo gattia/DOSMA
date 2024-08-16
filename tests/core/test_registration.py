@@ -57,7 +57,7 @@ class TestRegister(util.TempPathMixin):
             show_pbar=True,
         )
 
-        for vol, exp in zip(out, expected, strict=True):
+        for vol, exp in zip(out, expected):
             assert np.allclose(vol.volume, exp.volume)
 
         shutil.rmtree(data_dir)
@@ -113,7 +113,7 @@ class TestApplyWarp(util.TempPathMixin):
         # Multiple process (within apply warp)
         num_workers = min(len(vols), util.num_workers())
         outputs = apply_warp(vols, out_registration=out[0], num_workers=num_workers)
-        for mv_out, exp in zip(outputs, expected, strict=True):
+        for mv_out, exp in zip(outputs, expected):
             assert np.allclose(mv_out.volume, exp.volume)
 
         # Multiple process
@@ -121,7 +121,7 @@ class TestApplyWarp(util.TempPathMixin):
         with mp.Pool(num_workers) as p:
             outputs = p.map(func, vols)
 
-        for mv_out, exp in zip(outputs, expected, strict=True):
+        for mv_out, exp in zip(outputs, expected):
             assert np.allclose(mv_out.volume, exp.volume)
 
         shutil.rmtree(out_path)

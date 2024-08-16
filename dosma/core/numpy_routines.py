@@ -336,7 +336,7 @@ def concatenate(xs, axis: int = -1):
                     "has affine {} and the input at index {} "
                     "has affine {}".format(xs[0].affine[:3, :3], i, x.affine[:3, :3])
                 )
-        for i, (x1, x2) in enumerate(zip(xs[:-1], xs[1:], strict=True)):
+        for i, (x1, x2) in enumerate(zip(xs[:-1], xs[1:])):
             ijk1 = np.array([0, 0, 0, 1])
             ijk1[axis] = x1.shape[axis]
             xyz = x1.affine.dot(ijk1)[:3]
@@ -367,7 +367,7 @@ def concatenate(xs, axis: int = -1):
     else:
         headers = np.concatenate(headers, axis=axis)
         if headers.ndim != volume.ndim or any(
-            hs != 1 and hs != vs for hs, vs in zip(headers.shape, volume.shape, strict=True)
+            hs != 1 and hs != vs for hs, vs in zip(headers.shape, volume.shape)
         ):
             warnings.warn(
                 "Got invalid headers shape ({}) given concatenated output shape ({}). "

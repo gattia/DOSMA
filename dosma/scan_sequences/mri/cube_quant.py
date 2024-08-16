@@ -232,7 +232,7 @@ class CubeQuant(NonTargetSequence):
         # Transfer header information
         reg_vols = [
             reg._partial_clone(volume=False, headers=vol.headers())
-            for (reg, vol) in zip(reg_vols, volumes, strict=True)
+            for (reg, vol) in zip(reg_vols, volumes)
         ]
 
         # Undo sorting by spin lock time.

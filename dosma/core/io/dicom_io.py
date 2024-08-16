@@ -480,9 +480,7 @@ class DicomWriter(DataWriter):
                 process_map(_write_dicom_file, slices, headers, filepaths)
             else:
                 with mp.Pool(self.num_workers) as p:
-                    out = p.starmap_async(
-                        _write_dicom_file, zip(slices, headers, filepaths, strict=True)
-                    )
+                    out = p.starmap_async(_write_dicom_file, zip(slices, headers, filepaths))
                     out.wait()
         else:
             for s in tqdm(range(num_slices), disable=not self.verbose):

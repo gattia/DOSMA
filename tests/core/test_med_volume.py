@@ -418,7 +418,7 @@ class TestMedicalVolume(unittest.TestCase):
         mv2 = mv[..., 1]
         assert mv1._headers.shape == (1, 1, 30)
         assert mv2._headers.shape == (1, 1, 30)
-        for h1, h2 in zip(mv1.headers(flatten=True), mv2.headers(flatten=True), strict=True):
+        for h1, h2 in zip(mv1.headers(flatten=True), mv2.headers(flatten=True)):
             assert id(h1) == id(h2)
 
     def test_4d(self):

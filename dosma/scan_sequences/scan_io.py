@@ -308,7 +308,7 @@ class ScanIOMixin(ABC):
             keys = metadata.keys()
             if isinstance(paths, Dict):
                 paths = [paths[k] for k in keys]
-            paths = [os.path.join(_path, f"{k}") for k, _path in zip(keys, paths, strict=True)]
+            paths = [os.path.join(_path, f"{k}") for k, _path in zip(keys, paths)]
             values = self.save_custom_data(metadata.values(), paths, fname_fmt, **kwargs)
             metadata = dict(zip(keys, values, strict=True))
         elif not isinstance(metadata, str) and isinstance(metadata, (Sequence, Set)):
@@ -316,7 +316,7 @@ class ScanIOMixin(ABC):
             paths = [os.path.join(_path, "{:03d}".format(i)) for i, _path in enumerate(paths)]
             values = [
                 self.save_custom_data(_x, _path, fname_fmt, **kwargs)
-                for _x, _path in zip(values, paths, strict=True)
+                for _x, _path in zip(values, paths)
             ]
             if not isinstance(values, type(metadata)):
                 metadata = type(metadata)(values)
