@@ -9,7 +9,7 @@ from dosma.models.oaiunet2d import IWOAIOAIUnet2D, IWOAIOAIUnet2DNormalized
 from dosma.models.seg_model import whiten_volume
 from dosma.tissues.femoral_cartilage import FemoralCartilage
 
-import keras.backend as K
+import tensorflow.keras.backend as K
 
 from .. import util
 

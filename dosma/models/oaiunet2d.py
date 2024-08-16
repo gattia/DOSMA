@@ -6,9 +6,16 @@ from copy import deepcopy
 import numpy as np
 
 try:
-    from keras.layers import BatchNormalization as BN
-    from keras.layers import Concatenate, Conv2D, Conv2DTranspose, Dropout, Input, MaxPooling2D
-    from keras.models import Model
+    from tensorflow.keras.layers import BatchNormalization as BN
+    from tensorflow.keras.layers import (
+        Concatenate,
+        Conv2D,
+        Conv2DTranspose,
+        Dropout,
+        Input,
+        MaxPooling2D,
+    )
+    from tensorflow.keras.models import Model
 
     _SUPPORTS_KERAS = True
 except ImportError:  # pragma: no-cover

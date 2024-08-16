@@ -11,7 +11,7 @@ from dosma.models.util import get_model
 from dosma.scan_sequences.mri.qdess import QDess
 from dosma.tissues.femoral_cartilage import FemoralCartilage
 
-import keras.backend as K
+import tensorflow.keras.backend as K
 
 from ... import util
 

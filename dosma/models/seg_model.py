@@ -7,9 +7,8 @@ from dosma.core.med_volume import MedicalVolume
 from dosma.defaults import preferences
 from dosma.tissues.tissue import largest_cc
 
-
 try:
-    import keras.backend as K
+    import tensorflow.keras.backend as K
 except ImportError:  # pragma: no cover
     pass
 
@@ -156,6 +155,7 @@ def get_connected_segments(mask: np.ndarray) -> np.ndarray:
 
     return mask_
 
+
 def fill_holes(mask: np.ndarray, label_idx=None) -> np.ndarray:
     """
     Fill holes in binary mask.
@@ -177,4 +177,3 @@ def fill_holes(mask: np.ndarray, label_idx=None) -> np.ndarray:
     mask_ = binary_fill_holes(mask)
 
     return mask_
-
