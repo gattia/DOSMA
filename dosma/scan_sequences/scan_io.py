@@ -302,15 +302,15 @@ class ScanIOMixin(ABC):
             keys = metadata.keys()
             if isinstance(paths, Dict):
                 paths = [paths[k] for k in keys]
-            paths = [os.path.join(_path, f"{k}") for k, _path in zip(keys, paths)]
+            paths = [os.path.join(_path, f"{k}") for k, _path in zip(keys, paths, strict=True)]
             values = self.save_custom_data(metadata.values(), paths, fname_fmt, **kwargs)
-            metadata = {k: v for k, v in zip(keys, values)}
+            metadata = {k: v for k, v in zip(keys, values, strict=True)}
         elif not isinstance(metadata, str) and isinstance(metadata, (Sequence, Set)):
             values = list(metadata)
             paths = [os.path.join(_path, "{:03d}".format(i)) for i, _path in enumerate(paths)]
             values = [
                 self.save_custom_data(_x, _path, fname_fmt, **kwargs)
-                for _x, _path in zip(values, paths)
+                for _x, _path in zip(values, paths, strict=True)
             ]
             if not isinstance(values, type(metadata)):
                 metadata = type(metadata)(values)
@@ -388,7 +388,7 @@ class ScanIOMixin(ABC):
         if issubclass(dtype, Dict):
             keys = cls.load_custom_data(data.keys(), **kwargs)
             values = cls.load_custom_data(data.values(), **kwargs)
-            data = {k: v for k, v in zip(keys, values)}
+            data = {k: v for k, v in zip(keys, values, strict=True)}
         elif not issubclass(dtype, str) and issubclass(dtype, (list, tuple, set)):
             data = dtype([cls.load_custom_data(x, **kwargs) for x in data])
         else:

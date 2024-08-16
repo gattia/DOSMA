@@ -92,7 +92,7 @@ class QDess(ScanSequence):
         if isinstance(mask, dict):
             if not isinstance(tissue, Sequence):
                 tissue = [tissue]
-            for abbreviation, tis in zip([t.STR_ID for t in tissue], tissue):
+            for abbreviation, tis in zip([t.STR_ID for t in tissue], tissue, strict=True):
                 tis.set_mask(mask[abbreviation])
                 self.__add_tissue__(tis)
         else:

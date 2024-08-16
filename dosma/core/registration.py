@@ -133,12 +133,12 @@ def register(
         filepaths = [os.path.join(tmp_dir, f"{default_files[idx]}.nii.gz") for idx in idxs]
         if num_workers > 0:
             with mp.Pool(min(num_workers, len(vols))) as p:
-                out = p.starmap_async(_write, zip(vols, filepaths))
+                out = p.starmap_async(_write, zip(vols, filepaths, strict=True))
                 out.wait()
         else:
-            for vol, fp in zip(vols, filepaths):
+            for vol, fp in zip(vols, filepaths, strict=True):
                 _write(vol, fp)
-        for idx, fp in zip(idxs, filepaths):
+        for idx, fp in zip(idxs, filepaths, strict=True):
             files[idx] = fp
 
     # Assign file paths to respective variables.
@@ -151,7 +151,7 @@ def register(
 
     # Perform registration.
     reg_out_paths = [os.path.join(output_path, f"moving-{idx}") for idx in range(len(moving))]
-    reg_args = list(zip(moving, moving_masks, reg_out_paths))
+    reg_args = list(zip(moving, moving_masks, reg_out_paths, strict=True))
     if num_workers > 0:
         func = partial(
             _elastix_register_mp,
@@ -273,7 +273,7 @@ def apply_warp(
             "`output_path` must be a directory or list of directories " "of same length as `moving`"
         )
 
-    warp_args = list(zip(moving, output_path))
+    warp_args = list(zip(moving, output_path, strict=True))
     if num_workers > 0:
         func = partial(
             _apply_warp_mp,

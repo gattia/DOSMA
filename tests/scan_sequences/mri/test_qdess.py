@@ -38,7 +38,7 @@ class QDessTest(util.ScanTest):
         if metadata:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                for idx, (y, t) in enumerate(zip(ys, ts)):
+                for idx, (y, t) in enumerate(zip(ys, ts, strict=True)):
                     y.set_metadata("EchoTime", t, force=True)
                     y.set_metadata("EchoNumber", idx + 1, force=True)
                     y.set_metadata("RepetitionTime", 25.0, force=True)
@@ -84,7 +84,7 @@ class QDessTest(util.ScanTest):
         )
 
         scan2 = QDess.load(pik_file)
-        for v1, v2 in zip(scan.volumes, scan2.volumes):
+        for v1, v2 in zip(scan.volumes, scan2.volumes, strict=True):
             assert v1.is_identical(v2)
 
     @unittest.skipIf(not util.is_data_available(), "unittest data is not available")

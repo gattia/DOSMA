@@ -160,11 +160,11 @@ class TestDicomIO(ututils.TempPathMixin):
             )
 
             assert len(expected) == len(volumes)
-            for v, e in zip(volumes, expected):
+            for v, e in zip(volumes, expected, strict=True):
                 assert v.is_identical(e)
                 assert all(
                     self.are_equivalent_headers(h1, h2)
-                    for h1, h2 in zip(v.headers(flatten=True), e.headers(flatten=True))
+                    for h1, h2 in zip(v.headers(flatten=True), e.headers(flatten=True), strict=True)
                 )
 
     @unittest.skipIf(not ututils.is_data_available(), "unittest data is not available")
@@ -343,7 +343,7 @@ class TestDicomIO(ututils.TempPathMixin):
             volumes = DicomReader(num_workers=ututils.num_workers()).load(dicom_path)
             assert len(volumes_exp) == len(volumes)
 
-            for vol, exp in zip(volumes, volumes_exp):
+            for vol, exp in zip(volumes, volumes_exp, strict=True):
                 assert vol.is_identical(exp)
 
     @unittest.skipIf(not ututils.is_data_available(), "unittest data is not available")
