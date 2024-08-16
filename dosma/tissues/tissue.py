@@ -337,7 +337,7 @@ def largest_cc(mask, num=1):
         raise ValueError("No non-zero values: no connected components")
     if label_nb == 1:
         return mask.astype(np.bool)
-    label_count = np.bincount(labels.ravel().astype(np.int))
+    label_count = np.bincount(labels.ravel().astype(int))
     # discard 0 the 0 label
     label_count[0] = 0
 
