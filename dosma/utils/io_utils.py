@@ -95,7 +95,10 @@ def load_h5(file_path):
     data = {}
     with h5py.File(file_path, "r") as f:
         for key in f.keys():
-            data[key] = f.get(key).value
+            if h5py.version.version_tuple < (3, 0, 0):
+                data[key] = f.get(key).value
+            else:
+                data[key] = f[key][:]
 
     return data
 
