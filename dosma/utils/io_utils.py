@@ -125,8 +125,11 @@ def save_tables(
     for i in range(len(data_frames)):
         df = data_frames[i]
         df.to_excel(writer, sheet_names[i], index=False)
-
-    writer.save()
+    
+    if pd.__version__ >= "1.2.0":
+        writer.close()
+    else:
+        writer.save()
 
 
 def init_logger(log_file: str, debug: bool = False):  # pragma: no cover
