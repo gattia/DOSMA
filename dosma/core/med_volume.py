@@ -1240,13 +1240,22 @@ class MedicalVolume(NDArrayOperatorsMixin):
         if headers is not None:
             _slice_headers = []
             for idx, x in enumerate(_slice):
+                print(idx, x)
                 if headers.shape[idx] == 1 and not isinstance(x, int):
                     _slice_headers.append(slice(None))
                 elif headers.shape[idx] == 1 and isinstance(x, int):
                     _slice_headers.append(0)
                 else:
                     _slice_headers.append(x)
-            headers = headers[_slice_headers]
+            
+            print(headers)
+            print(_slice_headers)
+            print(f'type headers: {type(headers)}')
+            print(f'type _slice_headers: {type(_slice_headers)}')
+            print(len(headers))
+            for x in headers:
+                print(x)
+            headers = headers.squeeze()[_slice_headers]
 
         affine = slicer.slice_affine(_slice)
         return self._partial_clone(volume=volume, affine=affine, headers=headers)
