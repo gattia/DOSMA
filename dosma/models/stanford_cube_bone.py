@@ -5,7 +5,7 @@ __all__ = ["StanfordCubeBoneUNet2D"]
 
 class StanfordCubeBoneUNet2D(StanfordQDessBoneUNet2D):
     """
-    This model segments bones (femur, tibia, patella) from cube knee scans. 
+    This model segments bones (femur, tibia, patella) from cube knee scans.
 
     There are a few weights files that are associated with this model.
     We provide a short description of each below:
@@ -47,13 +47,17 @@ class StanfordCubeBoneUNet2D(StanfordQDessBoneUNet2D):
         model_path: str,
         resample_images: bool = True,
         orig_model_image_size: tuple = (512, 512),
-        tissue_names: tuple = (
-            "fem", "tib", "pat"
-        ),
+        tissue_names: tuple = ("fem", "tib", "pat"),
         tissues_to_combine: tuple = (),
         bone_indices: tuple = (7, 8, 9)
         # *args,
         # **kwargs
     ):
-        super().__init__(model_path, resample_images, orig_model_image_size, tissue_names, tissues_to_combine, bone_indices)
-
+        super().__init__(
+            model_path,
+            resample_images,
+            orig_model_image_size,
+            tissue_names,
+            tissues_to_combine,
+            bone_indices,
+        )

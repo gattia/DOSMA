@@ -6,9 +6,9 @@ import skimage
 from dosma.core.med_volume import MedicalVolume
 from dosma.core.orientation import SAGITTAL
 from dosma.defaults import preferences
-from dosma.models.seg_model import SegModel, whiten_volume, get_connected_segments, fill_holes
+from dosma.models.seg_model import SegModel, fill_holes, get_connected_segments, whiten_volume
 
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 
 __all__ = ["StanfordQDessBoneUNet2D"]
 
@@ -64,9 +64,7 @@ class StanfordQDessBoneUNet2D(SegModel):
         model_path: str,
         resample_images: bool = True,
         orig_model_image_size: tuple = (384, 384),
-        tissue_names: tuple = (
-            "pc", "fc", "mtc", "ltc", "med_men", "lat_men", "fem", "tib", "pat"
-        ),
+        tissue_names: tuple = ("pc", "fc", "mtc", "ltc", "med_men", "lat_men", "fem", "tib", "pat"),
         tissues_to_combine: tuple = (
             (("lat_men", "med_men"), "men"),
             (("mtc", "ltc"), "tc"),
@@ -153,7 +151,9 @@ class StanfordQDessBoneUNet2D(SegModel):
 
         # return mask
         # one-hot encode mask, reorder axes, and re-size to input shape
-        mask = self.__postprocess_segmentation__(mask, connected_only=connected_only, fill_bone_holes=fill_bone_holes)
+        mask = self.__postprocess_segmentation__(
+            mask, connected_only=connected_only, fill_bone_holes=fill_bone_holes
+        )
 
         vol_cp = deepcopy(vol_copy)
         vol_cp.volume = deepcopy(mask)
@@ -161,9 +161,7 @@ class StanfordQDessBoneUNet2D(SegModel):
         vol_cp.reformat(volume.orientation, inplace=True)
         vols = {"all": vol_cp}
 
-        for i, category in enumerate(
-            self.tissue_names
-        ):
+        for i, category in enumerate(self.tissue_names):
             vol_cp = deepcopy(vol_copy)
             vol_cp.volume = np.zeros_like(mask)
             vol_cp.volume[mask == i + 1] = 1
@@ -198,7 +196,9 @@ class StanfordQDessBoneUNet2D(SegModel):
 
         return whiten_volume(volume, eps=1e-8)
 
-    def __postprocess_segmentation__(self, mask: np.ndarray, connected_only: bool = True, fill_bone_holes: bool = True):
+    def __postprocess_segmentation__(
+        self, mask: np.ndarray, connected_only: bool = True, fill_bone_holes: bool = True
+    ):
 
         # USE ARGMAX TO GET SINGLE VOLUME SEGMENTATION OF ALL TISSUES
         mask = np.argmax(mask, axis=1)
@@ -223,5 +223,3 @@ class StanfordQDessBoneUNet2D(SegModel):
         mask = mask.astype(np.uint8)
 
         return mask
-
-
