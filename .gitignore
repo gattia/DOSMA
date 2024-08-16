@@ -55,3 +55,6 @@ docs/source/generated
 # coverage files
 .coverage
 coverage.xml
+
+# system files
+.DS_Store
