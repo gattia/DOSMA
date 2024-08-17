@@ -56,7 +56,7 @@ def collect_env_info():
         pass
 
     try:
-        import tensorflow.keras as keras
+        import keras
 
         data.append(("keras", keras.__version__))
     except ImportError:
