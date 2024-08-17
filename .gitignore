@@ -58,3 +58,6 @@ coverage.xml
 
 # system files
 .DS_Store
+
+#nipype logfiles
+stdout.nipype
