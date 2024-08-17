@@ -10,6 +10,7 @@ import warnings
 import numpy as np
 import pandas as pd
 import scipy
+
 if scipy.__version__ >= "2.0.0":
     from scipy.ndimage import center_of_mass as c_of_m
 else:
@@ -113,10 +114,7 @@ class PatellarCartilage(Tissue):
         locs = base_map.sum(axis=1).nonzero()
         voxels = base_map[locs[0], :, locs[1]]
         com_sup_inf = np.asarray(
-            [
-                int(np.ceil(c_of_m(voxels[i, :])[0]))
-                for i in range(voxels.shape[0])
-            ]
+            [int(np.ceil(c_of_m(voxels[i, :])[0])) for i in range(voxels.shape[0])]
         )
         region_mask_sup_deep = np.full(base_map.shape, self._REGION_DEEP_KEY)
         for i in range(len(com_sup_inf)):

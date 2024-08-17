@@ -11,6 +11,7 @@ import warnings
 import numpy as np
 import pandas as pd
 import scipy
+
 if scipy.__version__ >= "2.0.0":
     from scipy.ndimage import center_of_mass as c_of_m
 else:

@@ -1,9 +1,11 @@
 import numpy as np
 import scipy
+
 if scipy.__version__ >= "2.0.0":
     from scipy.ndimage import center_of_mass as c_of_m
 else:
     from scipy.ndimage.measurements import center_of_mass as c_of_m
+
 from scipy import optimize
 
 from dosma.core.device import get_array_module
@@ -127,4 +129,4 @@ def center_of_mass(input, labels=None, index=None):
         result = _sni.center_of_mass(input, labels=labels, index=index)
     else:
         result = c_of_m(input, labels=labels, index=index)
-    return 
+    return

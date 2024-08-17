@@ -128,7 +128,7 @@ def save_tables(
     for i in range(len(data_frames)):
         df = data_frames[i]
         df.to_excel(writer, sheet_names[i], index=False)
-    
+
     if pd.__version__ >= "1.2.0":
         writer.close()
     else:
