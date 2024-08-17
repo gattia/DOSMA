@@ -41,6 +41,10 @@ make dev
 ```
 
 To run tests, build documentation and contribute, run
+- If Elastix not installed, must indicate this to system by running the following on the commandline: 
+   `export "DOSMA_UNITTEST_DISABLE_ELASTIX=True"`
+- If test data not available add:
+   `export ""DOSMA_UNITTEST_DISABLE_DATA"=True"`
 ```bash
 make autoformat test build-docs
 ```
