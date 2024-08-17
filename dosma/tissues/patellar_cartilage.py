@@ -9,7 +9,11 @@ import warnings
 
 import numpy as np
 import pandas as pd
-import scipy.ndimage as sni
+import scipy
+if scipy.__version__ >= "2.0.0":
+    from scipy.ndimage import center_of_mass as c_of_m
+else:
+    from scipy.ndimage.measurements import center_of_mass as c_of_m
 
 from dosma.core.device import get_array_module
 from dosma.core.quant_vals import QuantitativeValueType
@@ -110,7 +114,7 @@ class PatellarCartilage(Tissue):
         voxels = base_map[locs[0], :, locs[1]]
         com_sup_inf = np.asarray(
             [
-                int(np.ceil(sni.measurements.center_of_mass(voxels[i, :])[0]))
+                int(np.ceil(c_of_m(voxels[i, :])[0]))
                 for i in range(voxels.shape[0])
             ]
         )
@@ -123,7 +127,7 @@ class PatellarCartilage(Tissue):
         # M/L
         cum_ml = np.nonzero(base_map.sum(axis=(0, 1)))[0]  # noqa: F841
         # midpoint_ml = int(np.ceil((np.min(cum_ml) + np.max(cum_ml)) / 2))
-        midpoint_ml = int(np.ceil(sni.measurements.center_of_mass(base_map)[2]))
+        midpoint_ml = int(np.ceil(c_of_m(base_map)[2]))
         region_mask_med_lat = np.full(base_map.shape, self._LATERAL_KEY)
         medial_span = slice(0, midpoint_ml) if self.medial_to_lateral else slice(midpoint_ml, None)
         region_mask_med_lat[:, :, medial_span] = self._MEDIAL_KEY

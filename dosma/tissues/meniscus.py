@@ -10,7 +10,11 @@ import warnings
 
 import numpy as np
 import pandas as pd
-import scipy.ndimage as sni
+import scipy
+if scipy.__version__ >= "2.0.0":
+    from scipy.ndimage import center_of_mass as c_of_m
+else:
+    from scipy.ndimage.measurements import center_of_mass as c_of_m
 
 from dosma.core.device import get_array_module
 from dosma.core.med_volume import MedicalVolume
@@ -108,7 +112,7 @@ class Meniscus(Tissue):
             with tilted mensici. This will be addressed in a later release. To avoid
             computing metrics on these regions, set ``self.split_ml_only=True``.
         """
-        center_of_mass = sni.measurements.center_of_mass(base_map)  # zero indexed
+        center_of_mass = c_of_m(base_map)  # zero indexed
 
         com_sup_inf = int(np.ceil(center_of_mass[0]))
         com_ant_post = int(np.ceil(center_of_mass[1]))
