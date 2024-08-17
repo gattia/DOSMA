@@ -166,7 +166,7 @@ class Meniscus(Tissue):
             coronal_categories = [x for x in coronal_categories if x[0] == -1]
 
         categorical_mask = np.zeros(region_mask.shape[:-1])
-        base_mask = self.__mask__.A.astype(np.bool)
+        base_mask = self.__mask__.A.astype(bool)
         labels = {}
         for idx, (
             (axial, axial_name),
@@ -251,7 +251,7 @@ class Meniscus(Tissue):
                 axial_map = np.asarray(
                     axial_region_mask == self._SUPERIOR_KEY, dtype=np.float32
                 ) + np.asarray(axial_region_mask == self._INFERIOR_KEY, dtype=np.float32)
-                axial_map = np.asarray(axial_map, dtype=np.bool)
+                axial_map = np.asarray(axial_map, dtype=bool)
             else:
                 axial_map = axial_region_mask == axial
 

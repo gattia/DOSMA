@@ -195,7 +195,7 @@ class TibialCartilage(Tissue):
                 axial_map = (axial_region_mask == self._SUPERIOR_KEY).astype(np.float32) + (
                     axial_region_mask == self._INFERIOR_KEY
                 ).astype(np.float32)
-                axial_map = axial_map.astype(np.bool)
+                axial_map = axial_map.astype(bool)
             else:
                 axial_map = axial_region_mask == axial
 

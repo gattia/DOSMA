@@ -161,7 +161,7 @@ class PatellarCartilage(Tissue):
                 axial_map = np.asarray(
                     deep_superficial_map == self._REGION_SUPERFICIAL_KEY, dtype=np.float32
                 ) + np.asarray(deep_superficial_map == self._REGION_DEEP_KEY, dtype=np.float32)
-                axial_map = np.asarray(axial_map, dtype=np.bool)
+                axial_map = np.asarray(axial_map, dtype=bool)
             else:
                 axial_map = deep_superficial_map == axial
 

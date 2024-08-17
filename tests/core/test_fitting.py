@@ -268,7 +268,7 @@ class TestMonoExponentialFit(unittest.TestCase):
         # The values will not be accurate, but other pixel values should be.
         x, y, b = _generate_monoexp_data((10, 10, 20))
         t = 1 / np.abs(b)
-        mask_arr = np.zeros(y[0].shape, dtype=np.bool)
+        mask_arr = np.zeros(y[0].shape, dtype=bool)
         mask_arr[:5, :5] = 1
         y[0][mask_arr] = 0
 
