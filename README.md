@@ -30,6 +30,24 @@ pip install dosma
 pip install dosma[ai]
 ```
 
+If you would like to install from source - to get the latest versions, or to build for your specific system: 
+
+If you would like to install from source then use: 
+
+```bash
+git clone git@github.com:ad12/DOSMA.git
+cd DOSMA
+pip install .
+```
+
+To get AI support: 
+
+```bash
+git clone git@github.com:ad12/DOSMA.git
+cd DOSMA
+pip install '.[ai]'
+```
+
 If you would like to contribute to DOSMA, we recommend you clone the repository and
 install DOSMA with `pip` in editable mode.
 
