@@ -536,7 +536,7 @@ class TestMedicalVolume(unittest.TestCase):
         assert torch.all(tensor == torch.from_numpy(vol))
         assert tensor.shape == mv.shape
 
-        vol = np.ones((10, 20, 30), np.complex)
+        vol = np.ones((10, 20, 30), complex)
         mv = MedicalVolume(vol, self._AFFINE)
 
         tensor = mv.to_torch()

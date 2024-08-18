@@ -603,7 +603,7 @@ class MedicalVolume(NDArrayOperatorsMixin):
                     [[1., 1.],
                      [1., 1.]]], device="cuda:0", dtype=torch.float64)
             >>> # view complex array as real tensor
-            >>> mv = MedicalVolume(np.ones((3,4,5), dtype=np.complex), np.eye(4))
+            >>> mv = MedicalVolume(np.ones((3,4,5), dtype=complex), np.eye(4))
             >>> tensor = mv.to_torch(view_as_real)
             >>> tensor.shape
             (3, 4, 5, 2)
@@ -1070,7 +1070,7 @@ class MedicalVolume(NDArrayOperatorsMixin):
 
         torch_version = env.get_version(torch)
         supports_cplx = version.Version(torch_version) >= _TORCH_COMPLEX_SUPPORT_VERSION
-        # Check if tensor needs to be converted to np.complex type.
+        # Check if tensor needs to be converted to `complex` type.
         # If tensor is of torch.complex64 or torch.complex128 dtype, then from_numpy will take
         # care of conversion to appropriate numpy dtype, and we do not need to do the to_complex
         # logic.
