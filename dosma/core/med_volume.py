@@ -496,7 +496,15 @@ class MedicalVolume(NDArrayOperatorsMixin):
 
         return nib.Nifti1Image(self.A, self.affine.copy())
 
-    def to_sitk(self, image_orientation: str='sagittal', vdim: int = None, transpose_inplane: bool = False, flip_array_x: bool = False, flip_array_y: bool = False, flip_array_z: bool = False):
+    def to_sitk(
+        self,
+        image_orientation: str = "sagittal",
+        vdim: int = None,
+        transpose_inplane: bool = False,
+        flip_array_x: bool = False,
+        flip_array_y: bool = False,
+        flip_array_z: bool = False,
+    ):
         """Converts to SimpleITK Image.
 
         SimpleITK loads DICOM files as individual slices that get stacked in ``(x, y, z)``
@@ -504,9 +512,9 @@ class MedicalVolume(NDArrayOperatorsMixin):
         However, ``sitk.GetArrayFromImage`` returns numpy arrays with the order
         ``(z, y, x)``. Converting to a SimpleITK image using ``sitk.GetImagrFromArray``
         also does this conversion (from z, y, x => x, y, z). This has to do with C++ and
-        numpy memory mapping. To facilitate converting MedicalVolume to SimpleITK Image, 
+        numpy memory mapping. To facilitate converting MedicalVolume to SimpleITK Image,
         the image_orientation must be specified. Be defauly, we assume sagittal orientation.
-        
+
         SimpleITK Image objects support vector pixel types, which are represented
         as an extra dimension in numpy arrays. The vector dimension can be specified
         with ``vdim``.
@@ -548,7 +556,7 @@ class MedicalVolume(NDArrayOperatorsMixin):
             self.reformat(("IS", "AP", "RL"), inplace=True)
         else:
             raise ValueError(f"Unsupported image orientation: {image_orientation}")
-    
+
         arr = self.volume
         ndim = arr.ndim
 
@@ -560,23 +568,23 @@ class MedicalVolume(NDArrayOperatorsMixin):
 
         affine = self.affine.copy()
         affine[:2] = -affine[:2]  # RAS+ -> LPS+
-        
+
         # Swap columns to adjust from (z, y, x) -> (x, y, z) for SimpleITK
-        affine[:,:3] = affine[:, [2, 1, 0]]  # This swaps the columns
+        affine[:, :3] = affine[:, [2, 1, 0]]  # This swaps the columns
 
         # Adjust origin and spacing for SimpleITK's expected order
-        origin = tuple(affine[:3, 3]) # origin stays the same. 
-        spacing = self.pixel_spacing[::-1] # Swap x, y, z -> z, y, x
+        origin = tuple(affine[:3, 3])  # origin stays the same.
+        spacing = self.pixel_spacing[::-1]  # Swap x, y, z -> z, y, x
         direction = affine[:3, :3] / np.asarray(spacing)
 
         img = sitk.GetImageFromArray(arr, isVector=vdim is not None)
         img.SetOrigin(origin)
         img.SetSpacing(spacing)
         img.SetDirection(tuple(direction.flatten()))
-        
+
         if any([flip_array_x, flip_array_y, flip_array_z]):
             flip_logic = [flip_array_x, flip_array_y, flip_array_z]
-            img = sitk.Flip(img, flip_logic)  
+            img = sitk.Flip(img, flip_logic)
 
         if transpose_inplane:
             pa = sitk.PermuteAxesImageFilter()

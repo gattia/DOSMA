@@ -6,7 +6,8 @@ import h5py
 import nibabel as nib
 import nibabel.testing as nib_testing
 import numpy as np
-import pydicom.data as pydd
+
+# import pydicom.data as pydd
 import SimpleITK as sitk
 
 from dosma.core.device import Device
@@ -30,7 +31,7 @@ class TestMedicalVolume(unittest.TestCase):
     )  # ('SI', 'AP', 'LR')
 
     _TEMP_PATH = os.path.join(ututils.TEMP_PATH, __name__)
-    
+
     TO_SITK_RTOL = 1e-4
     TO_SITK_ATOL = 1e-2
 
@@ -202,11 +203,11 @@ class TestMedicalVolume(unittest.TestCase):
     #         mv.to_sitk(transpose_inplane=True), copy=True, transpose_inplane=True
     #     )
     #     assert mv2.is_identical(mv)
-    
+
     # @unittest.skipIf(not ututils.is_data_available(), "unittest data is not available")
     def test_to_sitk_dicom_coronal(self):
-        axis = 'coronal'
-        cor_folder_names = ['SER00007', '12869311_cor', '12869314_cor']
+        axis = "coronal"
+        cor_folder_names = ["SER00007", "12869311_cor", "12869314_cor"]
 
         for cor_folder in cor_folder_names:
             cor_example_path = ututils.get_scan_dirpath(cor_folder)
@@ -215,25 +216,45 @@ class TestMedicalVolume(unittest.TestCase):
             reader = sitk.ImageSeriesReader()
             dicom_names = reader.GetGDCMSeriesFileNames(cor_example_path, useSeriesDetails=True)
             reader.SetFileNames(dicom_names)
-            expected_image = reader.Execute()       
-                        
+            expected_image = reader.Execute()
+
             # Load the DICOM data using DOSMA
             dr = DicomReader()
-            mv = dr.load(cor_example_path, group_by=None)[0] 
+            mv = dr.load(cor_example_path, group_by=None)[0]
 
             # Convert to SimpleITK using the MedicalVolume method
             img_sitk = mv.to_sitk(image_orientation=axis, vdim=None, transpose_inplane=False)
-            
+
             # Assertions to ensure correctness
-            np.testing.assert_allclose(sitk.GetArrayFromImage(img_sitk), sitk.GetArrayFromImage(expected_image), atol=self.TO_SITK_ATOL, rtol=self.TO_SITK_RTOL)
-            np.testing.assert_allclose(img_sitk.GetOrigin(), expected_image.GetOrigin(), atol=self.TO_SITK_ATOL, rtol=self.TO_SITK_RTOL)
-            np.testing.assert_allclose(img_sitk.GetSpacing(), expected_image.GetSpacing(), atol=self.TO_SITK_ATOL, rtol=self.TO_SITK_RTOL)
-            np.testing.assert_allclose(img_sitk.GetDirection(), expected_image.GetDirection(), atol=self.TO_SITK_ATOL, rtol=self.TO_SITK_RTOL)
-    
+            np.testing.assert_allclose(
+                sitk.GetArrayFromImage(img_sitk),
+                sitk.GetArrayFromImage(expected_image),
+                atol=self.TO_SITK_ATOL,
+                rtol=self.TO_SITK_RTOL,
+            )
+            np.testing.assert_allclose(
+                img_sitk.GetOrigin(),
+                expected_image.GetOrigin(),
+                atol=self.TO_SITK_ATOL,
+                rtol=self.TO_SITK_RTOL,
+            )
+            np.testing.assert_allclose(
+                img_sitk.GetSpacing(),
+                expected_image.GetSpacing(),
+                atol=self.TO_SITK_ATOL,
+                rtol=self.TO_SITK_RTOL,
+            )
+            np.testing.assert_allclose(
+                img_sitk.GetDirection(),
+                expected_image.GetDirection(),
+                atol=self.TO_SITK_ATOL,
+                rtol=self.TO_SITK_RTOL,
+            )
+
     # @unittest.skipIf(not ututils.is_data_available(), "unittest data is not available")
     def test_to_sitk_dicom_sagittal(self):
-        axis = 'sagittal'
-        sag_folder_names = ['SER00005', '12869310_sag', '15252_Ser10']
+        axis = "sagittal"
+        sag_folder_names = ["SER00005", "12869310_sag", "15252_Ser10"]
 
         for sag_folder in sag_folder_names:
             sag_example_path = ututils.get_scan_dirpath(sag_folder)
@@ -242,25 +263,45 @@ class TestMedicalVolume(unittest.TestCase):
             reader = sitk.ImageSeriesReader()
             dicom_names = reader.GetGDCMSeriesFileNames(sag_example_path, useSeriesDetails=True)
             reader.SetFileNames(dicom_names)
-            expected_image = reader.Execute()       
+            expected_image = reader.Execute()
 
             # Load the DICOM data using DOSMA
             dr = DicomReader()
-            mv = dr.load(sag_example_path, group_by=None)[0] 
+            mv = dr.load(sag_example_path, group_by=None)[0]
 
             # Convert to SimpleITK using the MedicalVolume method
             img_sitk = mv.to_sitk(image_orientation=axis, vdim=None, transpose_inplane=False)
 
             # Assertions to ensure correctness
-            np.testing.assert_allclose(img_sitk.GetOrigin(), expected_image.GetOrigin(), atol=self.TO_SITK_ATOL, rtol=self.TO_SITK_RTOL)
-            np.testing.assert_allclose(img_sitk.GetSpacing(), expected_image.GetSpacing(), atol=self.TO_SITK_ATOL, rtol=self.TO_SITK_RTOL)
-            np.testing.assert_allclose(img_sitk.GetDirection(), expected_image.GetDirection(), atol=self.TO_SITK_ATOL, rtol=self.TO_SITK_RTOL)
-            np.testing.assert_allclose(sitk.GetArrayFromImage(img_sitk), sitk.GetArrayFromImage(expected_image), atol=self.TO_SITK_ATOL, rtol=self.TO_SITK_RTOL)
+            np.testing.assert_allclose(
+                img_sitk.GetOrigin(),
+                expected_image.GetOrigin(),
+                atol=self.TO_SITK_ATOL,
+                rtol=self.TO_SITK_RTOL,
+            )
+            np.testing.assert_allclose(
+                img_sitk.GetSpacing(),
+                expected_image.GetSpacing(),
+                atol=self.TO_SITK_ATOL,
+                rtol=self.TO_SITK_RTOL,
+            )
+            np.testing.assert_allclose(
+                img_sitk.GetDirection(),
+                expected_image.GetDirection(),
+                atol=self.TO_SITK_ATOL,
+                rtol=self.TO_SITK_RTOL,
+            )
+            np.testing.assert_allclose(
+                sitk.GetArrayFromImage(img_sitk),
+                sitk.GetArrayFromImage(expected_image),
+                atol=self.TO_SITK_ATOL,
+                rtol=self.TO_SITK_RTOL,
+            )
 
     # @unittest.skipIf(not ututils.is_data_available(), "unittest data is not available")
     def test_to_sitk_dicom_axial(self):
-        axis = 'axial'
-        ax_folder_names = ['SER00003', '12869304_axial', '12869313_axial']
+        axis = "axial"
+        ax_folder_names = ["SER00003", "12869304_axial", "12869313_axial"]
 
         for ax_folder in ax_folder_names:
             ax_example_path = ututils.get_scan_dirpath(ax_folder)
@@ -269,24 +310,44 @@ class TestMedicalVolume(unittest.TestCase):
             reader = sitk.ImageSeriesReader()
             dicom_names = reader.GetGDCMSeriesFileNames(ax_example_path, useSeriesDetails=True)
             reader.SetFileNames(dicom_names)
-            expected_image = reader.Execute()       
+            expected_image = reader.Execute()
 
             # Load the DICOM data using DOSMA
             dr = DicomReader()
-            mv = dr.load(ax_example_path, group_by=None)[0] 
+            mv = dr.load(ax_example_path, group_by=None)[0]
 
             # Convert to SimpleITK using the MedicalVolume method
             img_sitk = mv.to_sitk(image_orientation=axis, vdim=None, transpose_inplane=False)
 
             # Assertions to ensure correctness
-            np.testing.assert_allclose(sitk.GetArrayFromImage(img_sitk), sitk.GetArrayFromImage(expected_image), atol=self.TO_SITK_ATOL, rtol=self.TO_SITK_RTOL)
-            np.testing.assert_allclose(img_sitk.GetOrigin(), expected_image.GetOrigin(), atol=self.TO_SITK_ATOL, rtol=self.TO_SITK_RTOL)
-            np.testing.assert_allclose(img_sitk.GetSpacing(), expected_image.GetSpacing(), atol=self.TO_SITK_ATOL, rtol=self.TO_SITK_RTOL)
-            np.testing.assert_allclose(img_sitk.GetDirection(), expected_image.GetDirection(), atol=self.TO_SITK_ATOL, rtol=self.TO_SITK_RTOL)
-    
+            np.testing.assert_allclose(
+                sitk.GetArrayFromImage(img_sitk),
+                sitk.GetArrayFromImage(expected_image),
+                atol=self.TO_SITK_ATOL,
+                rtol=self.TO_SITK_RTOL,
+            )
+            np.testing.assert_allclose(
+                img_sitk.GetOrigin(),
+                expected_image.GetOrigin(),
+                atol=self.TO_SITK_ATOL,
+                rtol=self.TO_SITK_RTOL,
+            )
+            np.testing.assert_allclose(
+                img_sitk.GetSpacing(),
+                expected_image.GetSpacing(),
+                atol=self.TO_SITK_ATOL,
+                rtol=self.TO_SITK_RTOL,
+            )
+            np.testing.assert_allclose(
+                img_sitk.GetDirection(),
+                expected_image.GetDirection(),
+                atol=self.TO_SITK_ATOL,
+                rtol=self.TO_SITK_RTOL,
+            )
+
     # @unittest.skipIf(not ututils.is_data_available(), "unittest data is not available")
     def test_to_sitk_dicom_flipping(self):
-        path_image = ututils.get_scan_dirpath('15252_Ser10')
+        path_image = ututils.get_scan_dirpath("15252_Ser10")
 
         # Load the DICOM data using SimpleITK
         reader = sitk.ImageSeriesReader()
@@ -309,23 +370,43 @@ class TestMedicalVolume(unittest.TestCase):
 
                     # Convert to SimpleITK using the MedicalVolume method with flipping
                     mv_to_sitk = mv.to_sitk(
-                        image_orientation='sagittal',
+                        image_orientation="sagittal",
                         vdim=None,
                         transpose_inplane=False,
                         flip_array_x=flip_array_x,
                         flip_array_y=flip_array_y,
-                        flip_array_z=flip_array_z
+                        flip_array_z=flip_array_z,
                     )
 
                     # Assertions to ensure correctness
-                    np.testing.assert_allclose(sitk.GetArrayFromImage(mv_to_sitk), sitk.GetArrayFromImage(sitk_img_flipped), atol=self.TO_SITK_ATOL, rtol=self.TO_SITK_RTOL)
-                    np.testing.assert_allclose(mv_to_sitk.GetOrigin(), sitk_img_flipped.GetOrigin(), atol=self.TO_SITK_ATOL, rtol=self.TO_SITK_RTOL)
-                    np.testing.assert_allclose(mv_to_sitk.GetSpacing(), sitk_img_flipped.GetSpacing(), atol=self.TO_SITK_ATOL, rtol=self.TO_SITK_RTOL)
-                    np.testing.assert_allclose(mv_to_sitk.GetDirection(), sitk_img_flipped.GetDirection(), atol=self.TO_SITK_ATOL, rtol=self.TO_SITK_RTOL)
+                    np.testing.assert_allclose(
+                        sitk.GetArrayFromImage(mv_to_sitk),
+                        sitk.GetArrayFromImage(sitk_img_flipped),
+                        atol=self.TO_SITK_ATOL,
+                        rtol=self.TO_SITK_RTOL,
+                    )
+                    np.testing.assert_allclose(
+                        mv_to_sitk.GetOrigin(),
+                        sitk_img_flipped.GetOrigin(),
+                        atol=self.TO_SITK_ATOL,
+                        rtol=self.TO_SITK_RTOL,
+                    )
+                    np.testing.assert_allclose(
+                        mv_to_sitk.GetSpacing(),
+                        sitk_img_flipped.GetSpacing(),
+                        atol=self.TO_SITK_ATOL,
+                        rtol=self.TO_SITK_RTOL,
+                    )
+                    np.testing.assert_allclose(
+                        mv_to_sitk.GetDirection(),
+                        sitk_img_flipped.GetDirection(),
+                        atol=self.TO_SITK_ATOL,
+                        rtol=self.TO_SITK_RTOL,
+                    )
 
     # @unittest.skipIf(not ututils.is_data_available(), "unittest data is not available")
     def test_to_sitk_dicom_inplane_rotation(self):
-        path_image = ututils.get_scan_dirpath('15252_Ser10')
+        path_image = ututils.get_scan_dirpath("15252_Ser10")
 
         # Load the DICOM data using SimpleITK
         reader = sitk.ImageSeriesReader()
@@ -342,19 +423,39 @@ class TestMedicalVolume(unittest.TestCase):
 
         # Convert to SimpleITK using the MedicalVolume method with in-plane rotation
         mv_to_sitk = mv.to_sitk(
-            image_orientation='sagittal',
+            image_orientation="sagittal",
             vdim=None,
             transpose_inplane=True,
             flip_array_x=False,
             flip_array_y=False,
-            flip_array_z=False
+            flip_array_z=False,
         )
 
         # Assertions to ensure correctness
-        np.testing.assert_allclose(sitk.GetArrayFromImage(mv_to_sitk), sitk.GetArrayFromImage(sitk_img_rotated), atol=self.TO_SITK_ATOL, rtol=self.TO_SITK_RTOL)
-        np.testing.assert_allclose(mv_to_sitk.GetOrigin(), sitk_img_rotated.GetOrigin(), atol=self.TO_SITK_ATOL, rtol=self.TO_SITK_RTOL)
-        np.testing.assert_allclose(mv_to_sitk.GetSpacing(), sitk_img_rotated.GetSpacing(), atol=self.TO_SITK_ATOL, rtol=self.TO_SITK_RTOL)
-        np.testing.assert_allclose(mv_to_sitk.GetDirection(), sitk_img_rotated.GetDirection(), atol=self.TO_SITK_ATOL, rtol=self.TO_SITK_RTOL)
+        np.testing.assert_allclose(
+            sitk.GetArrayFromImage(mv_to_sitk),
+            sitk.GetArrayFromImage(sitk_img_rotated),
+            atol=self.TO_SITK_ATOL,
+            rtol=self.TO_SITK_RTOL,
+        )
+        np.testing.assert_allclose(
+            mv_to_sitk.GetOrigin(),
+            sitk_img_rotated.GetOrigin(),
+            atol=self.TO_SITK_ATOL,
+            rtol=self.TO_SITK_RTOL,
+        )
+        np.testing.assert_allclose(
+            mv_to_sitk.GetSpacing(),
+            sitk_img_rotated.GetSpacing(),
+            atol=self.TO_SITK_ATOL,
+            rtol=self.TO_SITK_RTOL,
+        )
+        np.testing.assert_allclose(
+            mv_to_sitk.GetDirection(),
+            sitk_img_rotated.GetDirection(),
+            atol=self.TO_SITK_ATOL,
+            rtol=self.TO_SITK_RTOL,
+        )
 
     @unittest.skipIf(not ututils.is_data_available(), "unittest data is not available")
     def test_to_from_sitk_dicom_convention(self):
@@ -371,8 +472,8 @@ class TestMedicalVolume(unittest.TestCase):
         sitk_image = reader.Execute()
 
         # got rid of transpose below - this is not needed if properly using the orientation
-        # method now. 
-        sitk_from_mv = mv.to_sitk(image_orientation='sagittal', transpose_inplane=False)
+        # method now.
+        sitk_from_mv = mv.to_sitk(image_orientation="sagittal", transpose_inplane=False)
         img, expected = sitk_from_mv, sitk_image
         assert np.allclose(sitk.GetArrayViewFromImage(img), sitk.GetArrayViewFromImage(expected))
         assert img.GetSize() == mv.shape
