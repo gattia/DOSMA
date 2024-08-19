@@ -61,3 +61,6 @@ coverage.xml
 
 #nipype logfiles
 stdout.nipype
+
+# ignore "scratch" files used for testing / debugging
+**/scratch

@@ -14,7 +14,7 @@ DOSMA is an AI-powered Python library for medical image analysis. This includes,
 We hope that this open-source pipeline will be useful for quick anatomy/pathology analysis and will serve as a hub for adding support for analyzing different anatomies and scan sequences.
 
 ## Installation
-DOSMA requires Python 3.6+. The core module depends on numpy, nibabel, nipype,
+DOSMA requires Python 3.7+. The core module depends on numpy, nibabel, nipype,
 pandas, pydicom, scikit-image, scipy, PyYAML, and tqdm.
 
 Additional AI features can be unlocked by installing tensorflow and keras. To
