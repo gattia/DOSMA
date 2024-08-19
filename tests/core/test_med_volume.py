@@ -204,7 +204,7 @@ class TestMedicalVolume(unittest.TestCase):
     #     )
     #     assert mv2.is_identical(mv)
 
-    # @unittest.skipIf(not ututils.is_data_available(), "unittest data is not available")
+    @unittest.skipIf(not ututils.is_data_available(), "unittest data is not available")
     def test_to_sitk_dicom_coronal(self):
         axis = "coronal"
         cor_folder_names = ["SER00007", "12869311_cor", "12869314_cor"]
@@ -251,7 +251,7 @@ class TestMedicalVolume(unittest.TestCase):
                 rtol=self.TO_SITK_RTOL,
             )
 
-    # @unittest.skipIf(not ututils.is_data_available(), "unittest data is not available")
+    @unittest.skipIf(not ututils.is_data_available(), "unittest data is not available")
     def test_to_sitk_dicom_sagittal(self):
         axis = "sagittal"
         sag_folder_names = ["SER00005", "12869310_sag", "15252_Ser10"]
@@ -298,7 +298,7 @@ class TestMedicalVolume(unittest.TestCase):
                 rtol=self.TO_SITK_RTOL,
             )
 
-    # @unittest.skipIf(not ututils.is_data_available(), "unittest data is not available")
+    @unittest.skipIf(not ututils.is_data_available(), "unittest data is not available")
     def test_to_sitk_dicom_axial(self):
         axis = "axial"
         ax_folder_names = ["SER00003", "12869304_axial", "12869313_axial"]
@@ -345,7 +345,7 @@ class TestMedicalVolume(unittest.TestCase):
                 rtol=self.TO_SITK_RTOL,
             )
 
-    # @unittest.skipIf(not ututils.is_data_available(), "unittest data is not available")
+    @unittest.skipIf(not ututils.is_data_available(), "unittest data is not available")
     def test_to_sitk_dicom_flipping(self):
         path_image = ututils.get_scan_dirpath("15252_Ser10")
 
@@ -404,7 +404,7 @@ class TestMedicalVolume(unittest.TestCase):
                         rtol=self.TO_SITK_RTOL,
                     )
 
-    # @unittest.skipIf(not ututils.is_data_available(), "unittest data is not available")
+    @unittest.skipIf(not ututils.is_data_available(), "unittest data is not available")
     def test_to_sitk_dicom_inplane_rotation(self):
         path_image = ututils.get_scan_dirpath("15252_Ser10")
 
