@@ -8,7 +8,6 @@ import os
 import yaml
 from functools import partial
 from typing import Sequence
-import tensorflow as tf
 
 from dosma.models.oaiunet2d import IWOAIOAIUnet2D, IWOAIOAIUnet2DNormalized, OAIUnet2D
 from dosma.models.seg_model import SegModel

@@ -16,7 +16,6 @@ try:
         MaxPooling2D,
     )
     from tensorflow.keras.models import Model
-    import tensorflow as tf
 
     _SUPPORTS_KERAS = True
 except ImportError:  # pragma: no-cover
@@ -97,7 +96,7 @@ class OAIUnet2D(KerasSegModel):
             # Only maxpool till penultimate depth
             if depth_cnt < depth - 1:
 
-                # If size of input is odd, only do a 3x3 max pool                
+                # If size of input is odd, only do a 3x3 max pool
                 shape_ = get_tensor_shape_as_list(conv)
                 xres = shape_[1]
 
