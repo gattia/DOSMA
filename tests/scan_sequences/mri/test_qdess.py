@@ -7,7 +7,7 @@ from pydicom.tag import Tag
 
 from dosma.core.med_volume import MedicalVolume
 from dosma.core.quant_vals import QuantitativeValue
-from dosma.models.util import get_model
+from dosma.models.model_loading_util import get_model
 from dosma.scan_sequences.mri.qdess import QDess
 from dosma.tissues.femoral_cartilage import FemoralCartilage
 

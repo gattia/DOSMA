@@ -1,6 +1,6 @@
 import unittest
 
-from dosma.models import util as m_util
+from dosma.models import model_loading_util as m_util
 
 
 class TestUtil(unittest.TestCase):
