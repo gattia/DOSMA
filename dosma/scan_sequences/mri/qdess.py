@@ -236,8 +236,6 @@ class QDess(ScanSequence):
 
             c1 = (TR - Tg / 3) * (xp.power(dkL, 2)) * diffusivity
             
-            
-            
         else:
             # T2 fit
             k = (
