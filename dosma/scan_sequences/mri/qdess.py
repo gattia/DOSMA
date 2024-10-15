@@ -107,6 +107,7 @@ class QDess(ScanSequence):
         tissue: Tissue = None,
         suppress_fat: bool = False,
         suppress_fluid: bool = False,
+        b1map: MedicalVolume = None,
         beta: float = 1.2,
         gl_area: float = None,
         tg: float = None,
@@ -211,9 +212,15 @@ class QDess(ScanSequence):
 
         # Flip Angle (degree -> radians)
         alpha = float(ref_dicom.FlipAngle) if alpha is None else alpha
-        alpha = math.radians(alpha)
-        if np.allclose(math.sin(alpha / 2), 0):
-            warnings.warn("sin(flip angle) is close to 0 - t2 map may fail.", stacklevel=2)
+
+        if b1map:
+            alpha = np.multiply(self.b1map.volume, math.radians(alpha))
+            if np.allclose(np.sin(alpha / 2), 0):
+                warnings.warn("sin(flip angle) is close to 0 - t2 map may fail.")
+        else:
+            alpha = math.radians(alpha)
+            if np.allclose(math.sin(alpha / 2), 0):
+                warnings.warn("sin(flip angle) is close to 0 - t2 map may fail.")
 
         mask = xp.ones([r, c, num_slices])
 
@@ -228,22 +235,37 @@ class QDess(ScanSequence):
             dkL = gamma * Gl * Tg
 
             # Simply math
-            k = (
-                xp.power((xp.sin(alpha / 2)), 2)
-                * (1 + xp.exp(-TR / T1 - TR * xp.power(dkL, 2) * diffusivity))
-                / (1 - xp.cos(alpha) * xp.exp(-TR / T1 - TR * xp.power(dkL, 2) * diffusivity))
-            )
+            if b1map:
+                # treat k as an array
+                k = np.square((np.sin(alpha / 2))) * (
+                        1 + np.exp(-TR / T1 - TR * np.square(dkL) * diffusivity)) / (
+                            1 - np.cos(alpha) * np.exp(-TR / T1 - TR * np.square(dkL) * diffusivity))
+            else:
+                k = (
+                    xp.power((xp.sin(alpha / 2)), 2)
+                    * (1 + xp.exp(-TR / T1 - TR * xp.power(dkL, 2) * diffusivity))
+                    / (1 - xp.cos(alpha) * xp.exp(-TR / T1 - TR * xp.power(dkL, 2) * diffusivity))
+                )
+            ## END MODIFICATION
 
             c1 = (TR - Tg / 3) * (xp.power(dkL, 2)) * diffusivity
             
         else:
             # T2 fit
-            k = (
-                xp.power((xp.sin(alpha / 2)), 2)
-                * (1 + xp.exp(-TR / T1))
-                / (1 - xp.cos(alpha) * xp.exp(-TR / T1))
-            )
-            c1 = 0 
+            if b1map:
+                k = (
+                    np.square((np.sin(alpha / 2)))
+                    * (1 + np.exp(-TR / T1)) 
+                    / (1 - np.cos(alpha) * np.exp(-TR / T1))
+                )
+                c1 = 0
+            else:
+                k = (
+                    xp.power((xp.sin(alpha / 2)), 2)
+                    * (1 + xp.exp(-TR / T1))
+                    / (1 - xp.cos(alpha) * xp.exp(-TR / T1))
+                )
+                c1 = 0 
         
         # have to divide division into steps to avoid overflow error
         t2map = -2000 * (TR - TE) / (xp.log(abs(ratio) / k) + c1)
