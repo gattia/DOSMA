@@ -214,7 +214,7 @@ class QDess(ScanSequence):
         alpha = float(ref_dicom.FlipAngle) if alpha is None else alpha
 
         if b1map:
-            alpha = np.multiply(self.b1map.volume, math.radians(alpha))
+            alpha = np.multiply(b1map.volume, math.radians(alpha))
             if np.allclose(np.sin(alpha / 2), 0):
                 warnings.warn("sin(flip angle) is close to 0 - t2 map may fail.")
         else:
