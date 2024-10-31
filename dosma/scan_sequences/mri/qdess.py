@@ -214,8 +214,9 @@ class QDess(ScanSequence):
         alpha = float(ref_dicom.FlipAngle) if alpha is None else alpha
 
         if b1map:
+            alpha_nominal = deepcopy(alpha)
             alpha = np.multiply(b1map.volume, math.radians(alpha))
-            if np.allclose(np.sin(alpha / 2), 0):
+            if np.allclose(np.sin(alpha_nominal / 2), 0):
                 warnings.warn("sin(flip angle) is close to 0 - t2 map may fail.")
         else:
             alpha = math.radians(alpha)
@@ -235,38 +236,23 @@ class QDess(ScanSequence):
             dkL = gamma * Gl * Tg
 
             # Simply math
-            if b1map:
-                # treat k as an array
-                k = np.square((np.sin(alpha / 2))) * (
-                        1 + np.exp(-TR / T1 - TR * np.square(dkL) * diffusivity)) / (
-                            1 - np.cos(alpha) * np.exp(-TR / T1 - TR * np.square(dkL) * diffusivity))
-            else:
-                k = (
-                    xp.power((xp.sin(alpha / 2)), 2)
-                    * (1 + xp.exp(-TR / T1 - TR * xp.power(dkL, 2) * diffusivity))
-                    / (1 - xp.cos(alpha) * xp.exp(-TR / T1 - TR * xp.power(dkL, 2) * diffusivity))
-                )
-            ## END MODIFICATION
+            k = (
+                xp.power((xp.sin(alpha / 2)), 2)
+                * (1 + xp.exp(-TR / T1 - TR * xp.power(dkL, 2) * diffusivity))
+                / (1 - xp.cos(alpha) * xp.exp(-TR / T1 - TR * xp.power(dkL, 2) * diffusivity))
+            )
 
             c1 = (TR - Tg / 3) * (xp.power(dkL, 2)) * diffusivity
             
         else:
             # T2 fit
-            if b1map:
-                k = (
-                    np.square((np.sin(alpha / 2)))
-                    * (1 + np.exp(-TR / T1)) 
-                    / (1 - np.cos(alpha) * np.exp(-TR / T1))
-                )
-                c1 = 0
-            else:
-                k = (
-                    xp.power((xp.sin(alpha / 2)), 2)
-                    * (1 + xp.exp(-TR / T1))
-                    / (1 - xp.cos(alpha) * xp.exp(-TR / T1))
-                )
-                c1 = 0 
-        
+            k = (
+                xp.power((xp.sin(alpha / 2)), 2)
+                * (1 + xp.exp(-TR / T1))
+                / (1 - xp.cos(alpha) * xp.exp(-TR / T1))
+            )
+            c1 = 0 
+
         # have to divide division into steps to avoid overflow error
         t2map = -2000 * (TR - TE) / (xp.log(abs(ratio) / k) + c1)
         t2map = xp.nan_to_num(t2map)
