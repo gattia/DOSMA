@@ -79,6 +79,7 @@ class OAIUnet2D(KerasSegModel):
                 padding="same",
                 activation="relu",
                 kernel_initializer="he_normal",
+                name=f"conv2d_down_{depth_cnt}_1"  # Unique name for each layer
             )(pool)
             conv = Conv2D(
                 nfeatures[depth_cnt],
@@ -86,6 +87,7 @@ class OAIUnet2D(KerasSegModel):
                 padding="same",
                 activation="relu",
                 kernel_initializer="he_normal",
+                name=f"conv2d_down_{depth_cnt}_2"  # Unique name for each layer
             )(conv)
 
             conv = BN(axis=-1, momentum=0.95, epsilon=0.001)(conv)
@@ -134,6 +136,7 @@ class OAIUnet2D(KerasSegModel):
                 padding="same",
                 activation="relu",
                 kernel_initializer="he_normal",
+                name=f"conv2d_up_{depth_cnt}_1"  # Unique name for each layer
             )(up)
             conv = Conv2D(
                 nfeatures[depth_cnt],
@@ -141,6 +144,7 @@ class OAIUnet2D(KerasSegModel):
                 padding="same",
                 activation="relu",
                 kernel_initializer="he_normal",
+                name=f"conv2d_up_{depth_cnt}_2"  # Unique name for each layer
             )(conv)
 
             conv = BN(axis=-1, momentum=0.95, epsilon=0.001)(conv)

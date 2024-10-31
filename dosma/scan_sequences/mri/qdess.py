@@ -107,6 +107,7 @@ class QDess(ScanSequence):
         tissue: Tissue = None,
         suppress_fat: bool = False,
         suppress_fluid: bool = False,
+        b1map: MedicalVolume = None,
         beta: float = 1.2,
         gl_area: float = None,
         tg: float = None,
@@ -211,9 +212,16 @@ class QDess(ScanSequence):
 
         # Flip Angle (degree -> radians)
         alpha = float(ref_dicom.FlipAngle) if alpha is None else alpha
-        alpha = math.radians(alpha)
-        if np.allclose(math.sin(alpha / 2), 0):
-            warnings.warn("sin(flip angle) is close to 0 - t2 map may fail.", stacklevel=2)
+
+        if b1map:
+            alpha_nominal = deepcopy(alpha)
+            alpha = np.multiply(b1map.volume, math.radians(alpha))
+            if np.allclose(np.sin(alpha_nominal / 2), 0):
+                warnings.warn("sin(flip angle) is close to 0 - t2 map may fail.")
+        else:
+            alpha = math.radians(alpha)
+            if np.allclose(math.sin(alpha / 2), 0):
+                warnings.warn("sin(flip angle) is close to 0 - t2 map may fail.")
 
         mask = xp.ones([r, c, num_slices])
 
@@ -244,7 +252,7 @@ class QDess(ScanSequence):
                 / (1 - xp.cos(alpha) * xp.exp(-TR / T1))
             )
             c1 = 0 
-        
+
         # have to divide division into steps to avoid overflow error
         t2map = -2000 * (TR - TE) / (xp.log(abs(ratio) / k) + c1)
         t2map = xp.nan_to_num(t2map)
