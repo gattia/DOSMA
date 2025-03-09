@@ -2,7 +2,7 @@ from copy import deepcopy
 
 import numpy as np
 import skimage
-
+import gc
 from dosma.core.med_volume import MedicalVolume
 from dosma.core.orientation import SAGITTAL
 from dosma.defaults import preferences
@@ -253,3 +253,109 @@ class StanfordQDessBoneUNet2DSagittal(StanfordQDessBoneUNet2D):
     ALIASES = ("stanford-qdess-2022-unet2d-bone-sagittal",)
     TARGET_ORIENTATION = SAGITTAL
     DEFAULT_IMAGE_SIZE = (512, 512)  # Example different size
+
+
+class StanfordQDessBoneUNet2DSTAPLE():
+    """
+    This model applies the sagittal, coronal, and axial UNet
+    models to the input volume and then combines the results
+    using STAPLE.
+    """
+    
+    # need to combine labels from multiple models - but only trust
+    # some models for certain tissues. 
+    # ("pc", "fc", "mtc", "ltc", "med_men", "lat_men", "fem", "tib", "pat")
+    # Sag - include all of them. 
+    # Cor - only: "fc", "mtc", "ltc", "med_men", "lat_men", "fem", "tib",
+    # Ax - only: "pc", "fem", "tib", "pat"
+    
+    dict_tissues_combine_staple = {
+        "pc": ["sag", "ax"],
+        "fc": ["sag", "cor", "ax"],
+        "mtc": ["sag", "cor"],
+        "ltc": ["sag", "cor"],
+        "med_men": ["sag", "cor"],
+        "lat_men": ["sag", "cor"],
+        "fem": ["sag", "cor", "ax"],
+        "tib": ["sag", "cor", "ax"],
+        "pat": ["sag", "ax"]
+    }
+    dict_plane_idx = {
+        "sag": 0,
+        "cor": 1,
+        "ax": 2
+    }
+
+    def __init__(self, sagittal_model_path, coronal_model_path, axial_model_path):
+        self.sagittal_model_path = sagittal_model_path
+        self.coronal_model_path = coronal_model_path
+        self.axial_model_path = axial_model_path
+
+    def generate_mask(self, volume: MedicalVolume):
+        """
+        iterate over the models, loading them, generating masks, 
+        then deleting them from memory - don't want to have 
+        a GPU memory issue. 
+        """
+        vol_copy = deepcopy(volume)
+        
+        list_models = [
+            [self.sagittal_model_path, StanfordQDessBoneUNet2DSagittal],
+            [self.coronal_model_path, StanfordQDessBoneUNet2DCoronal],
+            [self.axial_model_path, StanfordQDessBoneUNet2DAxial]
+        ]
+
+        masks = []
+        for model_path, model_class in list_models:
+            model = model_class(model_path)
+            mask = model.generate_mask(volume)
+            masks.append(mask)
+            del model
+            gc.collect()
+        
+        vols_target = {}
+
+        # combine masks using STAPLE
+        for tissue in self.dict_tissues_combine_staple.keys():
+            list_models_for_tissue = self.dict_tissues_combine_staple[tissue]
+            list_masks_for_tissue = [masks[self.dict_plane_idx[plane]] for plane in list_models_for_tissue]
+            combined_mask = self.__combine_masks__(list_masks_for_tissue, vol_copy)
+            vols_target[tissue] = combined_mask
+        
+        # Combine the individual tissues into an "all" mask
+        mask_all = np.zeros_like(vol_copy.volume)
+        # iterate over tissue names to make sure in the correct order
+        for tissue_idx, tissue in enumerate(self.tissue_names):
+            tissue_mask = vols_target[tissue].volume
+            mask_all[tissue_mask == 1] = tissue_idx + 1
+        
+        # convert numpy array of mask into MedicalVolume
+        vol_all_target = deepcopy(vol_copy)
+        vol_all_target.volume = mask_all
+        vols_target["all"] = vol_all_target
+        
+        # simple tissue combine (med/lat tib cart into single tissue)
+        # Combine tissues in target orientation space
+        # TODO: turn this into a function (it is called here and 
+        # above, and thus is duplicated and should be consolidated 
+        # into a single function)
+        for tissues, tissue_name in self.tissues_to_combine:
+            vol_target = deepcopy(vol_copy)
+            vol_target.volume = np.zeros_like(mask)
+            # Use logical OR instead of addition for boolean arrays
+            vol_target.volume[(vols_target[tissues[0]].volume == 1) | (vols_target[tissues[1]].volume == 1)] = 1
+            vols_target[tissue_name] = vol_target
+        
+        return vols_target
+
+    def __combine_masks__(self, list_masks, vol_copy):
+        """
+        Combine the masks from the different planes.
+        """
+        
+        # this should use STAPLE algorithm
+        # this is build into SimpleITK
+        # need to convert MedicalVolume to SimpleITK image
+        # then do combination
+        # then convert back to MedicalVolume
+        # Then return the MedicalVolume
