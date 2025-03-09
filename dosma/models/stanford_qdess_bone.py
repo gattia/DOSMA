@@ -8,6 +8,7 @@ from dosma.core.orientation import SAGITTAL
 from dosma.defaults import preferences
 from dosma.models.seg_model import SegModel, fill_holes, get_connected_segments, whiten_volume
 
+import SimpleITK as sitk
 from tensorflow.keras.models import load_model
 
 __all__ = ["StanfordQDessBoneUNet2D", "StanfordQDessBoneUNet2DCoronal", "StanfordQDessBoneUNet2DAxial", "StanfordQDessBoneUNet2DSagittal"]
@@ -269,17 +270,22 @@ class StanfordQDessBoneUNet2DSTAPLE():
     # Cor - only: "fc", "mtc", "ltc", "med_men", "lat_men", "fem", "tib",
     # Ax - only: "pc", "fem", "tib", "pat"
     
-    dict_tissues_combine_staple = {
-        "pc": ["sag", "ax"],
-        "fc": ["sag", "cor", "ax"],
-        "mtc": ["sag", "cor"],
-        "ltc": ["sag", "cor"],
-        "med_men": ["sag", "cor"],
-        "lat_men": ["sag", "cor"],
-        "fem": ["sag", "cor", "ax"],
-        "tib": ["sag", "cor", "ax"],
-        "pat": ["sag", "ax"]
-    }
+    list_idx_not_include_STAPLE = [
+        [], # what not to include for sagittal
+        [1, 9], # what not to include for coronal
+        [3, 4, 5, 6,] # what not to include for axial
+    ]
+    # dict_tissues_combine_staple = {
+    #     "pc": ["sag", "ax"],
+    #     "fc": ["sag", "cor", "ax"],
+    #     "mtc": ["sag", "cor"],
+    #     "ltc": ["sag", "cor"],
+    #     "med_men": ["sag", "cor"],
+    #     "lat_men": ["sag", "cor"],
+    #     "fem": ["sag", "cor", "ax"],
+    #     "tib": ["sag", "cor", "ax"],
+    #     "pat": ["sag", "ax"]
+    # }
     dict_plane_idx = {
         "sag": 0,
         "cor": 1,
@@ -308,45 +314,49 @@ class StanfordQDessBoneUNet2DSTAPLE():
         masks = []
         for model_path, model_class in list_models:
             model = model_class(model_path)
-            mask = model.generate_mask(volume)
-            masks.append(mask)
+            masks_dict_ = model.generate_mask(volume)
+            masks.append(masks_dict_["all"])
             del model
             gc.collect()
         
-        vols_target = {}
+        # for each mask, go in and set the regions we are not using to zero. 
+        for i, mask in enumerate(masks):
+            for idx in self.list_idx_not_include_STAPLE[i]:
+                mask.volume[mask.volume == idx] = 0
+        
+        masks_sitk = [mask.to_sitk() for mask in masks]
+        
+        # unpack the sitk_masks
+        staple_mask_sitk = sitk.MultiLabelSTAPLE(*masks_sitk)
+        
+        staple_mask_mv = MedicalVolume.from_sitk(staple_mask_sitk)
+        staple_mask_mv.reformat(volume.orientation, inplace=True)
+        
+        # now... create the individual tissue masks as was expected/previously done by
+        # the other models. 
+        # Create temporary dictionary to hold target-oriented volumes
+        vols = {}
+        # Create 'all' volume in target orientation
+        vols["all"] = staple_mask_mv
 
-        # combine masks using STAPLE
-        for tissue in self.dict_tissues_combine_staple.keys():
-            list_models_for_tissue = self.dict_tissues_combine_staple[tissue]
-            list_masks_for_tissue = [masks[self.dict_plane_idx[plane]] for plane in list_models_for_tissue]
-            combined_mask = self.__combine_masks__(list_masks_for_tissue, vol_copy)
-            vols_target[tissue] = combined_mask
-        
-        # Combine the individual tissues into an "all" mask
-        mask_all = np.zeros_like(vol_copy.volume)
-        # iterate over tissue names to make sure in the correct order
-        for tissue_idx, tissue in enumerate(self.tissue_names):
-            tissue_mask = vols_target[tissue].volume
-            mask_all[tissue_mask == 1] = tissue_idx + 1
-        
-        # convert numpy array of mask into MedicalVolume
-        vol_all_target = deepcopy(vol_copy)
-        vol_all_target.volume = mask_all
-        vols_target["all"] = vol_all_target
-        
-        # simple tissue combine (med/lat tib cart into single tissue)
+        # Create individual tissues in target orientation
+        for i, category in enumerate(self.tissue_names):
+            vol = deepcopy(vol_copy)
+            vol.volume = np.zeros_like(staple_mask_mv.volume)
+            vol.volume[staple_mask_mv.volume == i + 1] = 1
+            vols[category] = vol
+
         # Combine tissues in target orientation space
-        # TODO: turn this into a function (it is called here and 
-        # above, and thus is duplicated and should be consolidated 
-        # into a single function)
         for tissues, tissue_name in self.tissues_to_combine:
-            vol_target = deepcopy(vol_copy)
-            vol_target.volume = np.zeros_like(mask)
+            vol = deepcopy(vol_copy)
+            vol.volume = np.zeros_like(staple_mask_mv.volume)
             # Use logical OR instead of addition for boolean arrays
-            vol_target.volume[(vols_target[tissues[0]].volume == 1) | (vols_target[tissues[1]].volume == 1)] = 1
-            vols_target[tissue_name] = vol_target
+            vol.volume[(vols[tissues[0]].volume == 1) | (vols[tissues[1]].volume == 1)] = 1
+            vols[tissue_name] = vol
+
+
+        return vols
         
-        return vols_target
 
     def __combine_masks__(self, list_masks, vol_copy):
         """
