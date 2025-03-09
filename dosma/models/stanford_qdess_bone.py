@@ -59,19 +59,20 @@ class StanfordQDessBoneUNet2D(SegModel):
 
     ALIASES = ("stanford-qdess-2022-unet2d-bone", "skm-tea-unet2d-bone")
 
+    TARGET_ORIENTATION = SAGITTAL
+    DEFAULT_IMAGE_SIZE = (512, 512)
+
     def __init__(
         self,
         model_path: str,
         resample_images: bool = True,
-        orig_model_image_size: tuple = (384, 384),
+        orig_model_image_size: tuple = None,
         tissue_names: tuple = ("pc", "fc", "mtc", "ltc", "med_men", "lat_men", "fem", "tib", "pat"),
         tissues_to_combine: tuple = (
             (("lat_men", "med_men"), "men"),
             (("mtc", "ltc"), "tc"),
         ),
         bone_indices: tuple = (7, 8, 9)
-        # *args,
-        # **kwargs
     ):
         """
         Args:
@@ -80,6 +81,9 @@ class StanfordQDessBoneUNet2D(SegModel):
                 match original model size. If False, will build new model specific
                 to loaded image and will load model weights only. Default: True.
         """
+
+        if orig_model_image_size is None:
+            orig_model_image_size = self.DEFAULT_IMAGE_SIZE
 
         self.batch_size = preferences.segmentation_batch_size
         self.orig_model_image_size = orig_model_image_size
@@ -138,7 +142,7 @@ class StanfordQDessBoneUNet2D(SegModel):
             vol_copy = np.sqrt(np.sum(vol_copy ** 2, axis=-1))
 
         # reorient to the sagittal plane
-        vol_copy.reformat(SAGITTAL, inplace=True)
+        vol_copy.reformat(self.TARGET_ORIENTATION, inplace=True)
 
         vol = vol_copy.volume
         vol = self.__preprocess_volume__(vol)
@@ -223,3 +227,24 @@ class StanfordQDessBoneUNet2D(SegModel):
         mask = mask.astype(np.uint8)
 
         return mask
+
+class StanfordQDessBoneUNet2DCoronal(StanfordQDessBoneUNet2D):
+    """2D UNet for bone segmentation in coronal plane"""
+    ALIASES = ("stanford-qdess-2022-unet2d-bone-coronal",)
+    CORONAL_TRANSPOSED  = ('LR', 'SI', 'AP')
+    TARGET_ORIENTATION = CORONAL_TRANSPOSED
+    DEFAULT_IMAGE_SIZE = (160, 512)  
+
+
+class StanfordQDessBoneUNet2DAxial(StanfordQDessBoneUNet2D):
+    """2D UNet for bone segmentation in axial plane"""
+    ALIASES = ("stanford-qdess-2022-unet2d-bone-axial",)
+    AXIAL_TRANSPOSED = ('LR', 'AP', 'SI')
+    TARGET_ORIENTATION = AXIAL_TRANSPOSED
+    DEFAULT_IMAGE_SIZE = (160, 512)  # Example different size
+
+class StanfordQDessBoneUNet2DSagittal(StanfordQDessBoneUNet2D):
+    """2D UNet for bone segmentation in sagittal plane"""
+    ALIASES = ("stanford-qdess-2022-unet2d-bone-sagittal",)
+    TARGET_ORIENTATION = SAGITTAL
+    DEFAULT_IMAGE_SIZE = (512, 512)  # Example different size
