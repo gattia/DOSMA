@@ -10,7 +10,7 @@ from dosma.models.seg_model import SegModel, fill_holes, get_connected_segments,
 
 from tensorflow.keras.models import load_model
 
-__all__ = ["StanfordQDessBoneUNet2D"]
+__all__ = ["StanfordQDessBoneUNet2D", "StanfordQDessBoneUNet2DCoronal", "StanfordQDessBoneUNet2DAxial", "StanfordQDessBoneUNet2DSagittal"]
 
 
 class StanfordQDessBoneUNet2D(SegModel):
@@ -159,30 +159,35 @@ class StanfordQDessBoneUNet2D(SegModel):
             mask, connected_only=connected_only, fill_bone_holes=fill_bone_holes
         )
 
-        vol_cp = deepcopy(vol_copy)
-        vol_cp.volume = deepcopy(mask)
-        # reorient to match with original volume
-        vol_cp.reformat(volume.orientation, inplace=True)
-        vols = {"all": vol_cp}
+        # Create temporary dictionary to hold target-oriented volumes
+        vols_target = {}
 
+        # Create 'all' volume in target orientation
+        vol_all_target = deepcopy(vol_copy)
+        vol_all_target.volume = deepcopy(mask)
+        vols_target["all"] = vol_all_target
+
+        # Create individual tissues in target orientation
         for i, category in enumerate(self.tissue_names):
-            vol_cp = deepcopy(vol_copy)
-            vol_cp.volume = np.zeros_like(mask)
-            vol_cp.volume[mask == i + 1] = 1
+            vol_target = deepcopy(vol_copy)
+            vol_target.volume = np.zeros_like(mask)
+            vol_target.volume[mask == i + 1] = 1
+            vols_target[category] = vol_target
 
-            # reorient to match with original volume
+        # Combine tissues in target orientation space
+        for tissues, tissue_name in self.tissues_to_combine:
+            vol_target = deepcopy(vol_copy)
+            vol_target.volume = np.zeros_like(mask)
+            # Use logical OR instead of addition for boolean arrays
+            vol_target.volume[(vols_target[tissues[0]].volume == 1) | (vols_target[tissues[1]].volume == 1)] = 1
+            vols_target[tissue_name] = vol_target
+
+        # Now reformat all volumes to original orientation
+        vols = {}
+        for name, vol_target in vols_target.items():
+            vol_cp = deepcopy(vol_target)
             vol_cp.reformat(volume.orientation, inplace=True)
-            vols[category] = vol_cp
-
-        # combine tissues
-        if len(self.tissues_to_combine) > 0:
-            for tissues, tissue_name in self.tissues_to_combine:
-                vol_cp = deepcopy(vol_copy)
-                vol_cp.volume = np.zeros_like(mask)
-                vol_cp.volume[(vols[tissues[0]].volume == 1) + (vols[tissues[1]].volume == 1)] = 1
-                # reorient to match with original volume
-                vol_cp.reformat(volume.orientation, inplace=True)
-                vols[tissue_name] = vol_cp
+            vols[name] = vol_cp
 
         return vols
 
