@@ -1,5 +1,5 @@
 from copy import deepcopy
-
+import time
 import numpy as np
 import skimage
 import gc
@@ -11,7 +11,11 @@ from dosma.models.seg_model import SegModel, fill_holes, get_connected_segments,
 import SimpleITK as sitk
 from tensorflow.keras.models import load_model
 
-__all__ = ["StanfordQDessBoneUNet2D", "StanfordQDessBoneUNet2DCoronal", "StanfordQDessBoneUNet2DAxial", "StanfordQDessBoneUNet2DSagittal"]
+__all__ = [
+    "StanfordQDessBoneUNet2D", "StanfordQDessBoneUNet2DCoronal", 
+    "StanfordQDessBoneUNet2DAxial", "StanfordQDessBoneUNet2DSagittal",
+    "StanfordQDessBoneUNet2DSTAPLE"
+    ]
 
 
 class StanfordQDessBoneUNet2D(SegModel):
@@ -272,7 +276,7 @@ class StanfordQDessBoneUNet2DSTAPLE():
     
     list_idx_not_include_STAPLE = [
         [], # what not to include for sagittal
-        [1, 9], # what not to include for coronal
+        [1], # what not to include for coronal
         [3, 4, 5, 6,] # what not to include for axial
     ]
     # dict_tissues_combine_staple = {
@@ -292,11 +296,23 @@ class StanfordQDessBoneUNet2DSTAPLE():
         "ax": 2
     }
 
-    def __init__(self, sagittal_model_path, coronal_model_path, axial_model_path):
+    def __init__(
+        self, 
+        sagittal_model_path, coronal_model_path, axial_model_path,
+        tissue_names: tuple = ("pc", "fc", "mtc", "ltc", "med_men", "lat_men", "fem", "tib", "pat"),
+        tissues_to_combine: tuple = (
+            (("lat_men", "med_men"), "men"),
+            (("mtc", "ltc"), "tc"),
+        ),
+        verbose=False,
+    ):
+        
         self.sagittal_model_path = sagittal_model_path
         self.coronal_model_path = coronal_model_path
         self.axial_model_path = axial_model_path
-
+        self.tissue_names = tissue_names
+        self.tissues_to_combine = tissues_to_combine
+        self.verbose = verbose
     def generate_mask(self, volume: MedicalVolume):
         """
         iterate over the models, loading them, generating masks, 
@@ -312,22 +328,32 @@ class StanfordQDessBoneUNet2DSTAPLE():
         ]
 
         masks = []
-        for model_path, model_class in list_models:
+        for model_idx, (model_path, model_class) in enumerate(list_models):
+            start_time = time.time()
             model = model_class(model_path)
             masks_dict_ = model.generate_mask(volume)
             masks.append(masks_dict_["all"])
             del model
             gc.collect()
+            if self.verbose:
+                print(f"Time taken to generate mask {model_idx}: {time.time() - start_time} seconds")
         
         # for each mask, go in and set the regions we are not using to zero. 
+        tic = time.time()
         for i, mask in enumerate(masks):
             for idx in self.list_idx_not_include_STAPLE[i]:
                 mask.volume[mask.volume == idx] = 0
-        
+        if self.verbose:
+            print(f"Time taken to set the regions we are not using to zero: {time.time() - tic} seconds")
+        tic = time.time()
         masks_sitk = [mask.to_sitk() for mask in masks]
         
         # unpack the sitk_masks
         staple_mask_sitk = sitk.MultiLabelSTAPLE(*masks_sitk)
+        if self.verbose:
+            print(f"Time to run STAPLE: {time.time() - tic} seconds")
+        
+        tic = time.time()
         
         staple_mask_mv = MedicalVolume.from_sitk(staple_mask_sitk)
         staple_mask_mv.reformat(volume.orientation, inplace=True)
@@ -354,6 +380,8 @@ class StanfordQDessBoneUNet2DSTAPLE():
             vol.volume[(vols[tissues[0]].volume == 1) | (vols[tissues[1]].volume == 1)] = 1
             vols[tissue_name] = vol
 
+        if self.verbose:
+            print(f"Time taken to create the individual tissue masks: {time.time() - tic} seconds")
 
         return vols
         
