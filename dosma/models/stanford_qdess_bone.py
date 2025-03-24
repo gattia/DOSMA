@@ -272,8 +272,8 @@ class StanfordQDessBoneUNet2DSTAPLE():
     
     list_idx_not_include_STAPLE = [
         [], # what not to include for sagittal
-        [1, 9], # what not to include for coronal
-        [3, 4, 5, 6,] # what not to include for axial
+        [1], # what not to include for coronal
+        [1, 2, 3, 4, 5, 6] # what not to include for axial
     ]
     # dict_tissues_combine_staple = {
     #     "pc": ["sag", "ax"],
