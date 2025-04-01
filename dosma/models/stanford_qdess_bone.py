@@ -347,15 +347,23 @@ class StanfordQDessBoneUNet2DSTAPLE():
             print(f"Time taken to set the regions we are not using to zero: {time.time() - tic} seconds")
         tic = time.time()
         masks_sitk = [mask.to_sitk() for mask in masks]
+        # cast to uint16 to prevent overflow
+        masks_sitk = [sitk.Cast(mask, sitk.sitkUInt16) for mask in masks_sitk]
         
         # unpack the sitk_masks
         staple_mask_sitk = sitk.MultiLabelSTAPLE(*masks_sitk)
+        
         if self.verbose:
             print(f"Time to run STAPLE: {time.time() - tic} seconds")
         
         tic = time.time()
         
         staple_mask_mv = MedicalVolume.from_sitk(staple_mask_sitk)
+        # set any labels > 9 (the expected max label) to 0
+        # these were likely undecided labels in the STAPLE algorithm
+        staple_mask_mv.volume[staple_mask_mv.volume > 9] = 0
+        # set to uint8
+        staple_mask_mv.volume = staple_mask_mv.volume.astype(np.uint8)
         staple_mask_mv.reformat(volume.orientation, inplace=True)
         
         # now... create the individual tissue masks as was expected/previously done by
