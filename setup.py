@@ -41,9 +41,9 @@ def get_resources():
     files = []
     # Elastix files
     for path in pathlib.Path("dosma/resources/elastix/params").rglob("*.*"):
-        files.append(str(path))
+        files.append(path.as_posix())
     for path in pathlib.Path("dosma/resources/templates").rglob("*.*"):
-        files.append(str(path))
+        files.append(path.as_posix())
     return [x.split("/", 1)[1] for x in files]
 
 
